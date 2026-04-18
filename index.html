@@ -1,0 +1,926 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Campus Connect Clubs — Login</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --navy:        #0D1B3E;
+      --navy-mid:    #162448;
+      --navy-light:  #1E3160;
+      --gold:        #C8A84B;
+      --gold-light:  #E2C97E;
+      --sky:         #D6E8F5;
+      --white:       #FFFFFF;
+      --ink:         #0D1B3E;
+      --muted:       #5A6E8A;
+      --border:      #C8D8EA;
+      --field-bg:    #F5F9FD;
+      --danger:      #C0392B;
+      --danger-bg:   #FDF3F2;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 400;
+      background-color: var(--sky);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .login-card {
+      display: flex;
+      width: 100%;
+      max-width: 880px;
+      min-height: 540px;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow:
+        0 30px 70px rgba(13,27,62,0.20),
+        0 4px 18px rgba(13,27,62,0.10);
+    }
+
+    .panel-brand {
+      background: linear-gradient(170deg, var(--navy-light) 0%, var(--navy) 100%);
+      width: 40%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .panel-brand::before {
+      content: '';
+      position: absolute;
+      top: -70px; left: -70px;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(200,168,75,0.10);
+      pointer-events: none;
+    }
+    .panel-brand::after {
+      content: '';
+      position: absolute;
+      bottom: -90px; right: -90px;
+      width: 340px; height: 340px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(200,168,75,0.08);
+      pointer-events: none;
+    }
+
+    .gold-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent 0%, var(--gold) 40%, var(--gold-light) 60%, transparent 100%);
+    }
+
+    .logo-wrap {
+      position: relative;
+      z-index: 1;
+      margin-bottom: 1.5rem;
+    }
+
+    .logo-wrap img {
+      width: 148px;
+      height: 148px;
+      object-fit: contain;
+      filter: drop-shadow(0 6px 20px rgba(200,168,75,0.35));
+      border-radius: 50%;
+    }
+
+    .logo-ring {
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      border: 1px solid rgba(200,168,75,0.3);
+      pointer-events: none;
+    }
+
+    .brand-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: var(--white);
+      letter-spacing: 0.02em;
+      line-height: 1.3;
+      position: relative;
+      z-index: 1;
+      margin-bottom: 0.45rem;
+    }
+
+    .brand-sub {
+      font-size: 0.69rem;
+      color: var(--gold-light);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 500;
+      position: relative;
+      z-index: 1;
+      margin-bottom: 1.6rem;
+    }
+
+    .brand-divider {
+      width: 36px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 0 auto 1.4rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .brand-tagline {
+      font-size: 0.77rem;
+      color: rgba(255,255,255,0.45);
+      line-height: 1.75;
+      font-weight: 300;
+      position: relative;
+      z-index: 1;
+      max-width: 200px;
+    }
+
+    .panel-form {
+      flex: 1;
+      background-color: var(--white);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 2.75rem 3rem;
+    }
+
+    .tab-row {
+      display: flex;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 1.8rem;
+    }
+
+    .tab-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      padding: 0.55rem 0.5rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      position: relative;
+      transition: color 0.15s;
+    }
+
+    .tab-btn::after {
+      content: '';
+      position: absolute;
+      bottom: -2px; left: 0; right: 0;
+      height: 2px;
+      background: var(--navy);
+      transform: scaleX(0);
+      transition: transform 0.2s ease;
+    }
+
+    .tab-btn.active { color: var(--navy); }
+    .tab-btn.active::after { transform: scaleX(1); }
+
+    .form-panel { display: none; }
+    .form-panel.active { display: block; }
+
+    .form-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: var(--ink);
+      margin-bottom: 0.3rem;
+    }
+
+    .form-header p {
+      font-size: 0.79rem;
+      color: var(--muted);
+      font-weight: 300;
+      line-height: 1.55;
+    }
+
+    .subtab-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.4rem;
+    }
+
+    .subtab-btn {
+      flex: 1;
+      padding: 0.4rem 0.5rem;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      background: transparent;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.02em;
+    }
+
+    .subtab-btn.active {
+      background: var(--navy);
+      border-color: var(--navy);
+      color: var(--white);
+    }
+
+    .field-group {
+      margin-bottom: 0.9rem;
+    }
+
+    .field-group label {
+      display: block;
+      font-size: 0.71rem;
+      font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.32rem;
+    }
+
+    .field-group input,
+    .field-group select {
+      width: 100%;
+      padding: 0.6rem 0.85rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: var(--field-bg);
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 400;
+      color: var(--ink);
+      transition: border-color 0.15s, box-shadow 0.15s;
+      outline: none;
+    }
+
+    .field-group input:focus,
+    .field-group select:focus {
+      border-color: var(--navy-light);
+      box-shadow: 0 0 0 3px rgba(30,49,96,0.08);
+      background: var(--white);
+    }
+
+    .field-group input::placeholder {
+      color: #B8C9D8;
+      font-weight: 300;
+    }
+
+    .field-row {
+      display: flex;
+      gap: 0.7rem;
+    }
+
+    .field-row .field-group { flex: 1; }
+
+    .btn-submit {
+      width: 100%;
+      padding: 0.68rem;
+      margin-top: 0.25rem;
+      background: linear-gradient(135deg, var(--navy-light) 0%, var(--navy) 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-submit::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 60%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(200,168,75,0.18), transparent);
+      transition: left 0.4s ease;
+    }
+    .btn-submit:hover::after { left: 160%; }
+    .btn-submit:hover { opacity: 0.92; }
+    .btn-submit:active { transform: scale(0.99); }
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--navy);
+      border: 1.5px solid var(--border);
+      margin-top: 0.5rem;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--navy);
+      background: rgba(13,27,62,0.02);
+    }
+
+    .notice {
+      margin-top: 1.1rem;
+      padding: 0.7rem 0.9rem;
+      border-radius: 7px;
+      font-size: 0.75rem;
+      line-height: 1.65;
+      font-weight: 300;
+    }
+
+    .notice strong {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.1rem;
+      font-size: 0.76rem;
+    }
+
+    .notice-info {
+      background: #EEF4FB;
+      border-left: 3px solid var(--navy-light);
+      color: var(--navy-light);
+    }
+
+    .notice-warn {
+      background: var(--danger-bg);
+      border-left: 3px solid var(--danger);
+      color: #8B2218;
+    }
+
+    .notice-success {
+      background: #E8F5E9;
+      border-left: 3px solid #4CAF50;
+      color: #2E7D32;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(13,27,62,0.45);
+      backdrop-filter: blur(3px);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--white);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 420px;
+      padding: 2rem;
+      box-shadow: 0 20px 60px rgba(13,27,62,0.22);
+    }
+
+    .modal-box h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      color: var(--ink);
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-box p {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 680px) {
+      .login-card { flex-direction: column; }
+      .panel-brand { width: 100%; padding: 2rem 1.5rem; }
+      .logo-wrap img { width: 90px; height: 90px; }
+      .brand-name { font-size: 1.1rem; }
+      .brand-tagline { display: none; }
+      .panel-form { padding: 2rem 1.75rem; }
+      .field-row { flex-direction: column; gap: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-card">
+
+  <div class="panel-brand">
+    <div class="gold-bar"></div>
+
+    <div class="logo-wrap">
+      <img
+        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%230D1B3E;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23C8A84B;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='100' cy='100' r='95' fill='none' stroke='%230D1B3E' stroke-width='3'/%3E%3Ccircle cx='100' cy='100' r='85' fill='none' stroke='%23C8A84B' stroke-width='2'/%3E%3Ctext x='100' y='115' font-family='Playfair Display, serif' font-size='28' font-weight='bold' text-anchor='middle' fill='%230D1B3E'%3ECCC%3C/text%3E%3Ccircle cx='70' cy='85' r='6' fill='%23C8A84B'/%3E%3Ccircle cx='130' cy='85' r='6' fill='%23C8A84B'/%3E%3Ccircle cx='100' cy='140' r='6' fill='%23C8A84B'/%3E%3C/svg%3E"
+        alt="Campus Connect Clubs"
+      >
+      <div class="logo-ring"></div>
+    </div>
+
+    <div class="brand-name">Campus Connect<br>Clubs</div>
+    <div class="brand-sub">Club Management System</div>
+    <div class="brand-divider"></div>
+    <div class="brand-tagline">
+      Discover clubs, manage memberships, track events, and stay connected across every campus organization.
+    </div>
+  </div>
+
+  <div class="panel-form">
+
+    <div class="tab-row">
+      <button class="tab-btn active" onclick="switchTab('student', this)">Student</button>
+      <button class="tab-btn" onclick="switchTab('admin', this)">Administrator</button>
+    </div>
+
+    <div class="form-panel active" id="panel-student">
+      <div class="form-header">
+        <h2>Student Sign In</h2>
+        <p>Enter the credentials issued to you by your administrator.</p>
+      </div>
+
+      <form onsubmit="return false;">
+        <div class="field-group">
+          <label for="s-id">Student ID</label>
+          <input type="text" id="s-id" placeholder="e.g. 2024-00001" autocomplete="username">
+        </div>
+        <div class="field-group">
+          <label for="s-pass">Password</label>
+          <input type="password" id="s-pass" placeholder="Enter your password" autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn-submit" id="btn-student-login" onclick="handleStudentLogin(event)">Sign In</button>
+      </form>
+
+      <div class="notice notice-info">
+        <strong>No account yet?</strong>
+        Student accounts are created by your school's system administrator. To receive your credentials, please approach your admin or club coordinator directly.
+      </div>
+    </div>
+
+    <div class="form-panel" id="panel-admin">
+      <div class="form-header">
+        <h2 id="admin-title">Administrator Sign In</h2>
+        <p id="admin-sub">Sign in to manage clubs, accounts, and system settings.</p>
+      </div>
+
+      <div class="subtab-row">
+        <button class="subtab-btn active" id="st-login" onclick="switchAdminTab('login')">Sign In</button>
+        <button class="subtab-btn" id="st-register" onclick="switchAdminTab('register')">Register</button>
+      </div>
+
+      <form id="admin-login-form" onsubmit="return false;">
+        <div class="field-group">
+          <label for="a-email">Email Address</label>
+          <input type="email" id="a-email" placeholder="admin@school.edu" autocomplete="username">
+        </div>
+        <div class="field-group">
+          <label for="a-pass">Password</label>
+          <input type="password" id="a-pass" placeholder="Enter your password" autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn-submit" id="btn-admin-login" onclick="handleAdminLogin(event)">Sign In as Administrator</button>
+      </form>
+
+      <form id="admin-register-form" style="display:none;" onsubmit="return false;">
+        <div class="field-row">
+          <div class="field-group">
+            <label for="r-first">First Name <span style="color:#C0392B">*</span></label>
+            <input type="text" id="r-first" placeholder="Juan" autocomplete="given-name">
+          </div>
+          <div class="field-group">
+            <label for="r-last">Last Name <span style="color:#C0392B">*</span></label>
+            <input type="text" id="r-last" placeholder="dela Cruz" autocomplete="family-name">
+          </div>
+        </div>
+        <div class="field-group">
+          <label for="r-email">Institutional Email <span style="color:#C0392B">*</span></label>
+          <input type="email" id="r-email" placeholder="admin@school.edu" autocomplete="email">
+        </div>
+        <div class="field-group">
+          <label for="r-pass">Password <span style="color:#C0392B">*</span></label>
+          <input type="password" id="r-pass" placeholder="Min. 8 characters" autocomplete="new-password">
+          <div id="r-pass-hint" style="font-size:0.68rem;color:var(--muted);margin-top:0.3rem;display:none;">
+            Must be at least 8 characters with a number and a special character.
+          </div>
+        </div>
+        <div class="field-group">
+          <label for="r-pass2">Confirm Password <span style="color:#C0392B">*</span></label>
+          <input type="password" id="r-pass2" placeholder="Re-enter your password" autocomplete="new-password">
+        </div>
+        <button type="submit" class="btn-submit" id="btn-admin-register" onclick="handleAdminRegister(event)">Create Administrator Account</button>
+
+        <div class="notice notice-warn" style="margin-top:0.9rem;">
+          <strong>Restricted Access</strong>
+          Administrator accounts carry full system privileges. Only authorized personnel should register. All registration activity is logged.
+        </div>
+      </form>
+
+    </div>
+
+  </div>
+</div>
+
+<div id="forgot-password-modal" class="modal-overlay">
+  <div class="modal-box">
+    <h3>Reset Password</h3>
+    <p>Enter your email address and we'll send you a link to reset your password.</p>
+    <form onsubmit="return false;">
+      <div class="field-group">
+        <label for="forgot-email">Email Address</label>
+        <input type="email" id="forgot-email" placeholder="your.email@campus.edu">
+      </div>
+      <button type="submit" class="btn-submit" id="btn-forgot-submit" onclick="handleForgotPassword(event)">Send Reset Link</button>
+      <button type="button" class="btn-submit btn-secondary" onclick="closeForgotPassword()">Cancel</button>
+    </form>
+    <div id="forgot-message"></div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script>
+const API_BASE = '/';
+
+function getSessionToken() {
+  const direct = localStorage.getItem('ccc_session_id');
+  if (direct) return direct;
+  try {
+    const d = JSON.parse(localStorage.getItem('ccc_user') || '{}');
+    return d.session_id || '';
+  } catch(e) { return ''; }
+}
+
+function authHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'X-Session-Token': getSessionToken()
+  };
+}
+
+function checkExistingSession() {
+  if (sessionStorage.getItem('ccc_logged_out')) {
+    sessionStorage.removeItem('ccc_logged_out');
+    return;
+  }
+  const token = getSessionToken();
+  console.log('[CCC] checkExistingSession fired');
+  console.log('[CCC] token from localStorage:', token);
+  fetch(`${API_BASE}auth.php?action=validate_session`, {
+    credentials: 'include',
+    headers: { 'X-Session-Token': token }
+  })
+    .then(r => {
+      console.log('[CCC] validate_session HTTP status:', r.status);
+      return r.json();
+    })
+    .then(data => {
+      console.log('[CCC] validate_session response:', JSON.stringify(data));
+      if (data.success && data.user) {
+        if (data.user.role === 'admin') {
+          window.location.replace('admin_dashboard.html');
+        } else if (data.user.role === 'student') {
+          window.location.replace('student_dashboard.html');
+        }
+      } else {
+        sessionStorage.clear();
+      }
+    })
+    .catch((err) => {
+      console.log('[CCC] validate_session error:', err);
+    });
+}
+checkExistingSession();
+
+function handleStudentLogin(e) {
+  e.preventDefault();
+  const studentId = document.getElementById('s-id').value.trim();
+  const pass = document.getElementById('s-pass').value.trim();
+  const btn = document.getElementById('btn-student-login');
+  if (!studentId || !pass) {
+    showFieldError('Please enter your Student ID and password.');
+    return;
+  }
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spinner"></span>Signing in...';
+  fetch(`${API_BASE}auth.php?action=login_student`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ student_id: studentId, password: pass })
+  })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerHTML = 'Sign In';
+      if (data.success && data.user && data.user.role === 'student') {
+        localStorage.setItem('ccc_user', JSON.stringify(data));
+        localStorage.setItem('ccc_session_id', data.session_id || '');
+        sessionStorage.setItem('ccc_user', data.user.student_id);
+        sessionStorage.setItem('ccc_role', 'student');
+        window.location.replace('student_dashboard.html');
+      } else if (data.success && data.user && data.user.role !== 'student') {
+        showFieldError('Invalid credentials. Please use the Student Login form.');
+      } else {
+        showFieldError(data.error || 'Login failed. Please try again.');
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerHTML = 'Sign In';
+      showFieldError('A connection error occurred. Please try again later.');
+    });
+}
+
+function handleAdminLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('a-email').value.trim();
+  const pass = document.getElementById('a-pass').value.trim();
+  const btn = document.getElementById('btn-admin-login');
+  if (!email || !pass) {
+    showFieldError('Please enter your email and password.');
+    return;
+  }
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spinner"></span>Signing in...';
+  fetch(`${API_BASE}auth.php?action=login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ email: email, password: pass })
+  })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerHTML = 'Sign In as Administrator';
+      if (data.success && data.user && data.user.role === 'admin') {
+        localStorage.setItem('ccc_user', JSON.stringify(data));
+        localStorage.setItem('ccc_session_id', data.session_id || '');
+        sessionStorage.setItem('ccc_role', 'admin');
+        sessionStorage.setItem('ccc_user', data.user.email);
+        window.location.replace('admin_dashboard.html');
+      } else if (data.success && data.user && data.user.role !== 'admin') {
+        showFieldError('Admin access required. Please login as student instead.');
+      } else {
+        showFieldError(data.error || 'Login failed');
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerHTML = 'Sign In as Administrator';
+      showFieldError('Connection error. Make sure your server is running.');
+    });
+}
+
+  function handleAdminRegister(e) {
+    e.preventDefault();
+
+    const first = document.getElementById('r-first').value.trim();
+    const last = document.getElementById('r-last').value.trim();
+    const email = document.getElementById('r-email').value.trim();
+    const pass = document.getElementById('r-pass').value;
+    const pass2 = document.getElementById('r-pass2').value;
+    const btn = document.getElementById('btn-admin-register');
+
+    if (!first || !last) {
+      showFieldError('Please enter your first and last name.');
+      return;
+    }
+
+    const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRx.test(email)) {
+      showFieldError('Please enter a valid institutional email address.');
+      return;
+    }
+
+    const passStrong = /^(?=.*[0-9])(?=.*[!@#$%^&*_\-]).{8,}$/.test(pass);
+    if (!passStrong) {
+      document.getElementById('r-pass-hint').style.display = '';
+      document.getElementById('r-pass').focus();
+      showFieldError('Password must be at least 8 characters and include a number and a special character (!@#$%^&*_-).');
+      return;
+    }
+    document.getElementById('r-pass-hint').style.display = 'none';
+
+    if (pass !== pass2) {
+      showFieldError('Passwords do not match. Please re-enter your password.');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading-spinner"></span>Creating account...';
+
+    fetch(`${API_BASE}auth.php?action=register_admin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+      body: JSON.stringify({
+        email: email,
+        first_name: first,
+        last_name: last,
+        password: pass
+      })
+    })
+      .then(r => r.json())
+      .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = 'Create Administrator Account';
+
+        if (data.success) {
+          showSuccessMessage('✓ Account created successfully! You can now sign in.');
+          document.getElementById('r-first').value = '';
+          document.getElementById('r-last').value = '';
+          document.getElementById('r-email').value = '';
+          document.getElementById('r-pass').value = '';
+          document.getElementById('r-pass2').value = '';
+          setTimeout(() => switchAdminTab('login'), 2000);
+        } else {
+          showFieldError(data.error || 'Registration failed');
+        }
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = 'Create Administrator Account';
+        showFieldError('Connection error. Make sure your server is running.');
+      });
+  }
+
+  function showForgotPassword() {
+    document.getElementById('forgot-password-modal').classList.add('open');
+  }
+
+  function closeForgotPassword() {
+    document.getElementById('forgot-password-modal').classList.remove('open');
+    document.getElementById('forgot-email').value = '';
+    document.getElementById('forgot-message').innerHTML = '';
+  }
+
+  function handleForgotPassword(e) {
+    e.preventDefault();
+    const email = document.getElementById('forgot-email').value.trim();
+    const btn = document.getElementById('btn-forgot-submit');
+    const msg = document.getElementById('forgot-message');
+
+    if (!email) {
+      msg.innerHTML = '<div class="notice notice-warn" style="margin-top:1rem;"><strong>Error</strong> Please enter your email address.</div>';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading-spinner"></span>Sending...';
+
+    fetch(`${API_BASE}auth.php?action=request_password_reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+      body: JSON.stringify({ email: email })
+    })
+      .then(r => r.json())
+      .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = 'Send Reset Link';
+
+        if (data.success) {
+          msg.innerHTML = '<div class="notice notice-success" style="margin-top:1rem;"><strong>Success!</strong> Check your email for the reset link.</div>';
+          setTimeout(closeForgotPassword, 3000);
+        } else {
+          msg.innerHTML = '<div class="notice notice-warn" style="margin-top:1rem;"><strong>Error</strong> ' + (data.error || 'Request failed') + '</div>';
+        }
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = 'Send Reset Link';
+        msg.innerHTML = '<div class="notice notice-warn" style="margin-top:1rem;"><strong>Error</strong> Connection failed. Make sure your server is running.</div>';
+      });
+  }
+
+  function switchTab(tab, el) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+
+    document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + tab).classList.add('active');
+
+    const banner = document.getElementById('form-error-banner');
+    if (banner) banner.remove();
+  }
+
+  function switchAdminTab(tab) {
+    const isReg = tab === 'register';
+
+    document.getElementById('st-login').classList.toggle('active', !isReg);
+    document.getElementById('st-register').classList.toggle('active', isReg);
+
+    document.getElementById('admin-login-form').style.display = isReg ? 'none' : 'block';
+    document.getElementById('admin-register-form').style.display = isReg ? 'block' : 'none';
+
+    document.getElementById('admin-title').textContent = isReg
+      ? 'Create Admin Account'
+      : 'Administrator Sign In';
+    document.getElementById('admin-sub').textContent = isReg
+      ? 'Register an administrator account to set up and manage the system.'
+      : 'Sign in to manage clubs, accounts, and system settings.';
+
+    const b = document.getElementById('form-error-banner');
+    if (b) b.remove();
+  }
+
+  function showFieldError(msg) {
+    let banner = document.getElementById('form-error-banner');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'form-error-banner';
+      banner.className = 'notice notice-warn';
+      banner.style.cssText = 'margin-top:0.75rem;animation:fadeIn .2s ease;';
+    }
+    banner.innerHTML = msg;
+
+    const activeForm = document.querySelector('.form-panel.active form:not([style*="none"])') ||
+                       document.querySelector('#admin-register-form');
+    const btn = activeForm ? activeForm.querySelector('.btn-submit') : null;
+
+    if (btn && btn.nextSibling !== banner) {
+      btn.after(banner);
+    }
+
+    setTimeout(() => {
+      if (banner.parentElement) banner.remove();
+    }, 5000);
+  }
+
+  function showSuccessMessage(msg) {
+    let banner = document.getElementById('form-success-banner');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'form-success-banner';
+      banner.className = 'notice notice-success';
+      banner.style.cssText = 'margin-top:0.75rem;animation:fadeIn .2s ease;';
+    }
+    banner.innerHTML = msg;
+
+    const activeForm = document.querySelector('.form-panel.active form:not([style*="none"])') ||
+                       document.querySelector('#admin-register-form');
+    const btn = activeForm ? activeForm.querySelector('.btn-submit') : null;
+
+    if (btn && btn.nextSibling !== banner) {
+      btn.after(banner);
+    }
+
+    setTimeout(() => {
+      if (banner.parentElement) banner.remove();
+    }, 5000);
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const passField = document.getElementById('r-pass');
+    if (passField) {
+      passField.addEventListener('focus', () => {
+        document.getElementById('r-pass-hint').style.display = '';
+      });
+      passField.addEventListener('blur', () => {
+        if (!passField.value) {
+          document.getElementById('r-pass-hint').style.display = 'none';
+        }
+      });
+    }
+
+    document.getElementById('forgot-password-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeForgotPassword();
+    });
+  });
+</script>
+
+</body>
+</html>
