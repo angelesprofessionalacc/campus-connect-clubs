@@ -1,0 +1,1990 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Campus Connect Clubs — Admin Dashboard</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+  <style>
+    :root {
+      --navy:       #0D1B3E;
+      --navy-mid:   #162448;
+      --navy-light: #1E3160;
+      --gold:       #C8A84B;
+      --gold-light: #E2C97E;
+      --sky:        #D6E8F5;
+      --white:      #FFFFFF;
+      --ink:        #0D1B3E;
+      --muted:      #5A6E8A;
+      --border:     #C8D8EA;
+      --field-bg:   #F5F9FD;
+      --sidebar-w:  240px;
+      --green:  #4CAF50;
+      --red:    #E74C3C;
+      --amber:  #f59e0b;
+      --violet: #8b5cf6;
+      --blue:   #3b82f6;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--sky);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+    }
+
+    .sidebar {
+      width: var(--sidebar-w);
+      min-height: 100vh;
+      background: linear-gradient(170deg, var(--navy-light) 0%, var(--navy) 100%);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1.5rem 1.25rem 1.25rem;
+      border-bottom: 1px solid rgba(200,168,75,0.15);
+    }
+
+    .logo-icon {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(200,168,75,0.40);
+      border: 1.5px solid rgba(200,168,75,0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(200,168,75,0.15);
+      color: var(--gold);
+      font-weight: 700;
+      font-size: 0.75rem;
+    }
+
+    .sidebar-logo-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.85rem;
+      color: var(--white);
+      line-height: 1.25;
+    }
+    .sidebar-logo-text span {
+      display: block;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.62rem;
+      color: var(--gold-light);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .admin-badge {
+      margin: 0.85rem 1.25rem 0;
+      background: rgba(200,168,75,0.12);
+      border: 1px solid rgba(200,168,75,0.25);
+      border-radius: 6px;
+      padding: 0.45rem 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .admin-badge i { color: var(--gold); font-size: 0.75rem; }
+    .admin-badge span { font-size: 0.7rem; color: var(--gold-light); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
+
+    .sidebar-nav { flex: 1; padding: 1rem 0; overflow-y: auto; }
+
+    .nav-section-label {
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(200,168,75,0.55);
+      padding: 0.85rem 1.25rem 0.3rem;
+    }
+
+    .sidebar-nav a {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.6rem 1.25rem;
+      color: rgba(255,255,255,0.88) !important;
+      text-decoration: none !important;
+      font-size: 0.82rem;
+      font-weight: 400;
+      border-left: 3px solid transparent;
+      transition: all 0.18s ease;
+      cursor: pointer;
+    }
+    .sidebar-nav a:hover {
+      color: var(--white) !important;
+      background: rgba(255,255,255,0.06);
+      border-left-color: rgba(200,168,75,0.4);
+    }
+    .sidebar-nav a.active {
+      color: var(--white) !important;
+      background: rgba(200,168,75,0.12);
+      border-left-color: var(--gold);
+      font-weight: 500;
+    }
+    .sidebar-nav a i { width: 16px; text-align: center; font-size: 0.82rem; }
+
+    .sidebar-footer {
+      padding: 1rem 1.25rem 1.5rem;
+      border-top: 1px solid rgba(200,168,75,0.12);
+    }
+    .sidebar-footer a {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      color: rgba(255,255,255,0.5) !important;
+      font-size: 0.78rem;
+      text-decoration: none !important;
+      transition: color 0.15s;
+      cursor: pointer;
+    }
+    .sidebar-footer a:hover { color: var(--red) !important; }
+
+    .main-wrap {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.75rem;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .topbar-left h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      color: var(--ink);
+      margin: 0;
+    }
+    .topbar-left p { font-size: 0.72rem; color: var(--muted); margin: 0; }
+
+    .topbar-right { display: flex; align-items: center; gap: 1rem; }
+
+    .topbar-admin-label {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--ink);
+      padding: 0.3rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--field-bg);
+    }
+
+    .page-body { padding: 1.75rem; flex: 1; overflow-y: auto; }
+
+    .page-section { display: none; }
+    .page-section.active { display: block; }
+
+    .stat-card {
+      background: var(--white);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 1.35rem 1.5rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      transition: box-shadow 0.18s;
+    }
+    .stat-card:hover { box-shadow: 0 6px 24px rgba(13,27,62,0.08); }
+
+    .stat-icon {
+      width: 46px; height: 46px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 1.1rem;
+    }
+    .si-navy   { background: rgba(13,27,62,0.08);  color: var(--navy); }
+    .si-gold   { background: rgba(200,168,75,0.12); color: var(--gold); }
+    .si-green  { background: rgba(76,175,80,0.1);   color: var(--green); }
+    .si-amber  { background: rgba(245,158,11,0.1);  color: var(--amber); }
+    .si-violet { background: rgba(139,92,246,0.1);  color: var(--violet); }
+    .si-blue   { background: rgba(59,130,246,0.1);  color: var(--blue); }
+    .si-red    { background: rgba(231,76,60,0.08);  color: var(--red); }
+
+    .stat-body { flex: 1; }
+    .stat-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.7rem;
+      color: var(--ink);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 0.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 500;
+    }
+
+    .section-heading {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      color: var(--ink);
+      margin-bottom: 0.85rem;
+      margin-top: 1.5rem;
+    }
+    .section-heading:first-of-type { margin-top: 0; }
+    .section-heading small {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 400;
+      color: var(--muted);
+      margin-left: 0.5rem;
+    }
+
+    .panel {
+      background: var(--white);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+    .panel-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .panel-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.9rem;
+      color: var(--ink);
+      margin: 0;
+    }
+    .panel-body { padding: 1rem 1.25rem; }
+
+    .data-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    .data-table th {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    .data-table td {
+      padding: 0.7rem 0.75rem;
+      border-bottom: 1px solid rgba(200,216,234,0.5);
+      color: var(--ink);
+      vertical-align: middle;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: var(--field-bg); }
+
+    .club-name-cell { display: flex; align-items: center; gap: 0.6rem; }
+    .club-avatar {
+      width: 30px; height: 30px;
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.78rem; font-weight: 600;
+      color: var(--white); flex-shrink: 0;
+    }
+
+    .badge-cat { font-size: 0.62rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.04em; }
+    .bc-stem    { background: rgba(59,130,246,0.1);  color: var(--blue); }
+    .bc-arts    { background: rgba(139,92,246,0.1);  color: var(--violet); }
+    .bc-sports  { background: rgba(76,175,80,0.1);   color: var(--green); }
+    .bc-culture { background: rgba(245,158,11,0.1);  color: var(--amber); }
+    .bc-service { background: rgba(13,27,62,0.08);   color: var(--navy); }
+
+    .badge-status { font-size: 0.62rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+    .bs-active    { background: rgba(76,175,80,0.1);   color: var(--green); }
+    .bs-pending   { background: rgba(245,158,11,0.1);  color: var(--amber); }
+    .bs-rejected  { background: rgba(231,76,60,0.08);  color: var(--red); }
+    .bs-approved  { background: rgba(76,175,80,0.1);   color: var(--green); }
+    .bs-completed { background: rgba(59,130,246,0.1);  color: var(--blue); }
+    .bs-ongoing   { background: rgba(59,130,246,0.1);  color: var(--blue); }
+    .bs-planned   { background: rgba(245,158,11,0.1);  color: var(--amber); }
+    .bs-upcoming  { background: rgba(59,130,246,0.1);  color: var(--blue); }
+
+    .badge-role { font-size: 0.62rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+    .br-admin   { background: rgba(200,168,75,0.15); color: #8a6800; }
+    .br-officer { background: rgba(139,92,246,0.1);  color: var(--violet); }
+    .br-student { background: rgba(13,27,62,0.07);   color: var(--navy); }
+
+    .tbl-action {
+      background: none; border: none;
+      color: var(--muted); cursor: pointer;
+      padding: 3px 5px; border-radius: 4px;
+      font-size: 0.78rem; transition: color 0.15s;
+    }
+    .tbl-action:hover { color: var(--navy); }
+    .tbl-action.del:hover { color: var(--red); }
+
+    .filter-bar { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+    .search-input {
+      padding: 0.4rem 0.8rem; border: 1.5px solid var(--border);
+      border-radius: 8px; background: var(--field-bg);
+      font-family: 'Outfit', sans-serif; font-size: 0.78rem; color: var(--ink);
+      outline: none; min-width: 180px; transition: border-color 0.15s;
+    }
+    .search-input:focus { border-color: var(--navy-light); }
+    .filter-select {
+      padding: 0.4rem 0.7rem; border: 1.5px solid var(--border);
+      border-radius: 8px; background: var(--field-bg);
+      font-family: 'Outfit', sans-serif; font-size: 0.78rem; color: var(--ink);
+      outline: none; cursor: pointer;
+    }
+
+    .btn-sm {
+      font-size: 0.72rem; font-weight: 600;
+      padding: 4px 12px; border-radius: 6px;
+      border: 1.5px solid var(--border);
+      background: var(--field-bg); color: var(--ink);
+      cursor: pointer; transition: all 0.15s;
+    }
+    .btn-sm:hover { border-color: var(--navy); background: var(--white); }
+    .btn-sm.primary { background: var(--navy); border-color: var(--navy); color: var(--white); }
+    .btn-sm.primary:hover { background: var(--navy-light); border-color: var(--navy-light); }
+
+    .panel-footer {
+      padding: 0.75rem 1.25rem;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .panel-footer span { font-size: 0.72rem; color: var(--muted); }
+
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(13,27,62,0.45);
+      backdrop-filter: blur(3px);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal-box {
+      background: var(--white);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 92vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(13,27,62,0.22);
+      animation: modalIn 0.22s ease;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(14px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-header {
+      padding: 1.35rem 1.5rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      color: var(--ink);
+    }
+    .modal-close {
+      background: none; border: none;
+      color: var(--muted); font-size: 1rem;
+      cursor: pointer; padding: 2px 6px;
+      border-radius: 6px; transition: color 0.15s;
+    }
+    .modal-close:hover { color: var(--red); }
+
+    .modal-body { padding: 1.35rem 1.5rem; }
+
+    .modal-step { display: none; }
+    .modal-step.active { display: block; }
+
+    .step-indicator {
+      display: flex; align-items: center; gap: 0;
+      margin-bottom: 1.5rem;
+    }
+    .step-dot {
+      display: flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 2px solid var(--border);
+      font-size: 0.72rem; font-weight: 700;
+      color: var(--muted); background: var(--white);
+      flex-shrink: 0; transition: all 0.2s;
+    }
+    .step-dot.active  { border-color: var(--navy); background: var(--navy); color: var(--white); }
+    .step-dot.done    { border-color: var(--green); background: var(--green); color: var(--white); }
+    .step-line { flex: 1; height: 2px; background: var(--border); transition: background 0.2s; }
+    .step-line.done { background: var(--green); }
+
+    .form-group { margin-bottom: 1rem; }
+    .form-label {
+      display: block; font-size: 0.72rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--muted); margin-bottom: 0.35rem;
+    }
+    .form-control-ccc {
+      width: 100%; padding: 0.5rem 0.8rem;
+      border: 1.5px solid var(--border); border-radius: 8px;
+      background: var(--field-bg); font-family: 'Outfit', sans-serif;
+      font-size: 0.85rem; color: var(--ink); outline: none;
+      transition: border-color 0.15s;
+    }
+    .form-control-ccc:focus { border-color: var(--navy-light); background: var(--white); }
+    .form-row { display: flex; gap: 0.75rem; }
+    .form-row .form-group { flex: 1; }
+
+    .color-swatches { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .color-swatch {
+      width: 28px; height: 28px; border-radius: 7px;
+      cursor: pointer; border: 2.5px solid transparent;
+      transition: transform 0.12s, border-color 0.12s;
+    }
+    .color-swatch:hover { transform: scale(1.15); }
+    .color-swatch.selected { border-color: var(--ink); transform: scale(1.15); }
+
+    .modal-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+    }
+    .btn-modal-back {
+      background: none; border: 1.5px solid var(--border);
+      color: var(--ink); font-size: 0.82rem; font-weight: 600;
+      padding: 0.5rem 1.2rem; border-radius: 8px;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .btn-modal-back:hover { border-color: var(--navy); }
+    .btn-modal-next {
+      background: var(--navy); color: var(--white);
+      border: none; font-size: 0.82rem; font-weight: 600;
+      padding: 0.5rem 1.4rem; border-radius: 8px;
+      cursor: pointer; transition: background 0.15s; margin-left: auto;
+    }
+    .btn-modal-next:hover { background: var(--navy-light); }
+    .btn-modal-next.gold { background: var(--gold); color: var(--navy); }
+    .btn-modal-next.gold:hover { background: var(--gold-light); }
+
+    .modal-success {
+      text-align: center; padding: 2rem 1.5rem;
+    }
+    .success-icon {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: rgba(76,175,80,0.1); margin: 0 auto 1rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; color: var(--green);
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main-wrap { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">CCC</div>
+    <div class="sidebar-logo-text">
+      Campus Connect
+      <span>Clubs Platform</span>
+    </div>
+  </div>
+
+  <div class="admin-badge">
+    <i class="fas fa-shield-alt"></i>
+    <span>Administrator</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Overview</div>
+    <a onclick="showSection('dashboard', this)" class="active">
+      <i class="fas fa-th-large"></i> Dashboard
+    </a>
+
+    <div class="nav-section-label">Management</div>
+    <a onclick="showSection('clubs', this)">
+      <i class="fas fa-users"></i> Club Management
+    </a>
+    <a onclick="showSection('users', this)">
+      <i class="fas fa-user-cog"></i> User Management
+    </a>
+
+    <div class="nav-section-label">Content</div>
+    <a onclick="showSection('events', this)">
+      <i class="fas fa-calendar-alt"></i> Event Oversight
+    </a>
+    <a onclick="showSection('activities', this)">
+      <i class="fas fa-clipboard-list"></i> Activity Records
+    </a>
+    <a onclick="showSection('announcements', this)">
+      <i class="fas fa-bullhorn"></i> Announcements
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <a onclick="logout()"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+  </div>
+</aside>
+
+<div class="main-wrap">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1 id="page-title">Admin Dashboard</h1>
+      <p id="date-display"></p>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-admin-label">Admin</span>
+    </div>
+  </header>
+
+  <main class="page-body">
+
+    <div class="page-section active" id="section-dashboard">
+
+      <div class="row mb-4" style="row-gap:1rem;">
+        <div class="col-6 col-lg-3">
+          <div class="stat-card">
+            <div class="stat-icon si-navy"><i class="fas fa-users"></i></div>
+            <div class="stat-body">
+              <div class="stat-value" id="dash-stat-clubs">0</div>
+              <div class="stat-label">Total Clubs</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="stat-card">
+            <div class="stat-icon si-gold"><i class="fas fa-id-card"></i></div>
+            <div class="stat-body">
+              <div class="stat-value" id="dash-stat-members">0</div>
+              <div class="stat-label">Total Members</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="stat-card">
+            <div class="stat-icon si-green"><i class="fas fa-calendar-check"></i></div>
+            <div class="stat-body">
+              <div class="stat-value" id="dash-stat-events">0</div>
+              <div class="stat-label">Events</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="stat-card">
+            <div class="stat-icon si-amber"><i class="fas fa-hourglass-half"></i></div>
+            <div class="stat-body">
+              <div class="stat-value" id="dash-stat-users">0</div>
+              <div class="stat-label">Total Users</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-4" style="row-gap:1rem;">
+        <div class="col-lg-8">
+          <h2 class="section-heading">Club Overview <small>All registered clubs</small></h2>
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">Clubs Directory</span>
+              <button class="btn-sm primary" onclick="openAddClubModal()">+ Add Club</button>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="data-table">
+                <thead><tr><th>Club</th><th>Category</th><th>Members</th><th>Status</th><th></th></tr></thead>
+                <tbody id="dashboard-clubs-tbody">
+                  <tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <h2 class="section-heading">Quick Stats <small>System overview</small></h2>
+          <div class="panel">
+            <div class="panel-body">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border);">
+                <span style="font-size:0.8rem;color:var(--muted);">Active Clubs</span>
+                <span style="font-size:0.95rem;font-weight:600;color:var(--ink);" id="stat-active-clubs">0</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border);">
+                <span style="font-size:0.8rem;color:var(--muted);">Pending Clubs</span>
+                <span style="font-size:0.95rem;font-weight:600;color:var(--ink);" id="stat-pending-clubs">0</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;">
+                <span style="font-size:0.8rem;color:var(--muted);">System Status</span>
+                <span style="font-size:0.78rem;font-weight:600;color:var(--green);padding:2px 8px;background:rgba(76,175,80,0.1);border-radius:5px;">Online</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="page-section" id="section-clubs">
+
+      <div class="row mb-4" style="row-gap:1rem;">
+        <div class="col-6 col-lg-4"><div class="stat-card"><div class="stat-icon si-navy"><i class="fas fa-users"></i></div><div class="stat-body"><div class="stat-value" id="clubs-stat-total">0</div><div class="stat-label">Total Clubs</div></div></div></div>
+        <div class="col-6 col-lg-4"><div class="stat-card"><div class="stat-icon si-green"><i class="fas fa-check-circle"></i></div><div class="stat-body"><div class="stat-value" id="clubs-stat-active">0</div><div class="stat-label">Active</div></div></div></div>
+        <div class="col-6 col-lg-4"><div class="stat-card"><div class="stat-icon si-amber"><i class="fas fa-hourglass-half"></i></div><div class="stat-body"><div class="stat-value" id="clubs-stat-pending">0</div><div class="stat-label">Pending</div></div></div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">All Clubs</span>
+          <div class="filter-bar">
+            <input class="search-input" type="text" placeholder="Search clubs…" id="club-search" oninput="filterClubsTable()">
+            <select class="filter-select" id="club-cat-filter" onchange="filterClubsTable()"><option value="">All Categories</option><option value="STEM">STEM</option><option value="Arts">Arts</option><option value="Sports">Sports</option><option value="Culture">Culture</option><option value="Service">Service</option></select>
+            <button class="btn-sm primary" onclick="openAddClubModal()">+ Add Club</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table" id="clubs-table">
+            <thead><tr><th>Club Name</th><th>Category</th><th>Members</th><th>Status</th><th></th></tr></thead>
+            <tbody id="clubs-tbody">
+              <tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">Loading clubs...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel-footer">
+          <span id="clubs-count">Showing 0 clubs</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="page-section" id="section-users">
+      <div class="row mb-4" style="row-gap:1rem;">
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon si-navy"><i class="fas fa-user-graduate"></i></div><div class="stat-body"><div class="stat-value" id="users-stat-students">0</div><div class="stat-label">Students</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon si-violet"><i class="fas fa-user-tie"></i></div><div class="stat-body"><div class="stat-value" id="users-stat-officers">0</div><div class="stat-label">Officers</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon si-gold"><i class="fas fa-shield-alt"></i></div><div class="stat-body"><div class="stat-value" id="users-stat-admins">0</div><div class="stat-label">Admins</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon si-amber"><i class="fas fa-users"></i></div><div class="stat-body"><div class="stat-value" id="users-stat-total">0</div><div class="stat-label">Total</div></div></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">All Users</span>
+          <div class="filter-bar">
+            <input class="search-input" type="text" placeholder="Search users…" id="user-search" oninput="filterUsersTable()">
+            <select class="filter-select" id="user-role-filter" onchange="filterUsersTable()"><option value="">All Roles</option><option value="student">Student</option><option value="officer">Officer</option><option value="admin">Admin</option></select>
+            <button class="btn-sm primary" onclick="openCreateStudentModal()">+ Create Student</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table" id="users-table">
+            <thead><tr><th>Name</th><th>Email</th><th>Student ID</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="users-tbody">
+              <tr><td colspan="6" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">Loading users...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel-footer">
+          <span id="users-count">Showing 0 users</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-section" id="section-events">
+
+      <div class="row mb-4" style="row-gap:1rem;">
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon si-blue"><i class="fas fa-calendar-alt"></i></div><div class="stat-body"><div class="stat-value" id="events-stat-upcoming">0</div><div class="stat-label">Upcoming</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon si-green"><i class="fas fa-calendar-check"></i></div><div class="stat-body"><div class="stat-value" id="events-stat-completed">0</div><div class="stat-label">Completed</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon si-amber"><i class="fas fa-hourglass-half"></i></div><div class="stat-body"><div class="stat-value" id="events-stat-pending">0</div><div class="stat-label">Pending</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon si-navy"><i class="fas fa-layer-group"></i></div><div class="stat-body"><div class="stat-value" id="events-stat-total">0</div><div class="stat-label">Total</div></div></div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">All Events</span>
+          <div class="filter-bar">
+            <input class="search-input" type="text" placeholder="Search events…" id="events-search" oninput="filterEventsTable()">
+            <button class="btn-sm primary" onclick="openAddEventModal()">+ Add Event</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table" id="events-table">
+            <thead><tr><th>Event Name</th><th>Club</th><th>Date</th><th>Status</th><th></th></tr></thead>
+            <tbody id="events-tbody">
+              <tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">Loading events...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel-footer">
+          <span id="events-count">Showing 0 events</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="page-section" id="section-activities">
+
+      <div class="row mb-4" style="row-gap:1rem;">
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon si-navy"><i class="fas fa-clipboard-list"></i></div><div class="stat-body"><div class="stat-value" id="activities-stat-total">0</div><div class="stat-label">Total Logged</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon si-green"><i class="fas fa-check-double"></i></div><div class="stat-body"><div class="stat-value" id="activities-stat-completed">0</div><div class="stat-label">Completed</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon si-blue"><i class="fas fa-spinner"></i></div><div class="stat-body"><div class="stat-value" id="activities-stat-ongoing">0</div><div class="stat-label">Ongoing</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon si-amber"><i class="fas fa-calendar-plus"></i></div><div class="stat-body"><div class="stat-value" id="activities-stat-planned">0</div><div class="stat-label">Planned</div></div></div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Activity Log</span>
+          <div class="filter-bar">
+            <input class="search-input" type="text" placeholder="Search activities…" id="activities-search" oninput="filterActivitiesTable()">
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table" id="activities-table">
+            <thead><tr><th>Activity</th><th>Club</th><th>Type</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody id="activities-tbody">
+              <tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">No activities logged yet</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel-footer">
+          <span id="activities-count">Showing 0 activities</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="page-section" id="section-announcements">
+
+      <div class="row mb-4" style="row-gap:1rem;">
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon si-blue"><i class="fas fa-bullhorn"></i></div><div class="stat-body"><div class="stat-value" id="announcements-stat-published">0</div><div class="stat-label">Published</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon si-amber"><i class="fas fa-hourglass-half"></i></div><div class="stat-body"><div class="stat-value" id="announcements-stat-pending">0</div><div class="stat-label">Pending</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon si-red"><i class="fas fa-times-circle"></i></div><div class="stat-body"><div class="stat-value" id="announcements-stat-rejected">0</div><div class="stat-label">Rejected</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon si-green"><i class="fas fa-calendar-check"></i></div><div class="stat-body"><div class="stat-value" id="announcements-stat-month">0</div><div class="stat-label">This Month</div></div></div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Announcements</span>
+          <div class="filter-bar">
+            <input class="search-input" type="text" placeholder="Search announcements…" id="announcements-search" oninput="filterAnnouncementsTable()">
+            <select class="filter-select" id="announcements-status-filter" onchange="filterAnnouncementsTable()"><option value="">All Status</option><option value="Published">Published</option><option value="Pending">Pending</option><option value="Rejected">Rejected</option></select>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table" id="announcements-table">
+            <thead><tr><th>Title</th><th>Club</th><th>Status</th><th>Created</th><th></th></tr></thead>
+            <tbody id="announcements-tbody">
+              <tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">No announcements yet</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel-footer">
+          <span id="announcements-count">Showing 0 announcements</span>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<div class="modal-overlay" id="addClubModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">Add New Club</span>
+      <button class="modal-close" onclick="closeAddClubModal()"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="modal-body" style="padding-bottom:0;">
+      <div class="step-indicator">
+        <div class="step-dot active" id="sdot-1">1</div>
+        <div class="step-line" id="sline-1"></div>
+        <div class="step-dot" id="sdot-2">2</div>
+        <div class="step-line" id="sline-2"></div>
+        <div class="step-dot" id="sdot-3">3</div>
+      </div>
+    </div>
+
+    <div class="modal-body modal-step active" id="modal-step-1">
+      <div class="form-group">
+        <label class="form-label">Club Name <span style="color:var(--red)">*</span></label>
+        <input class="form-control-ccc" id="club-name" type="text" placeholder="e.g. Environmental Advocates Club">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Category <span style="color:var(--red)">*</span></label>
+          <select class="form-control-ccc" id="club-category">
+            <option value="">Select category…</option>
+            <option value="STEM">STEM</option>
+            <option value="Arts">Arts</option>
+            <option value="Sports">Sports</option>
+            <option value="Culture">Culture</option>
+            <option value="Service">Service</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Year Founded</label>
+          <input class="form-control-ccc" id="club-year" type="number" placeholder="2026" min="1900" max="2100">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Short Description</label>
+        <textarea class="form-control-ccc" id="club-desc" rows="3" placeholder="Briefly describe the club's purpose…" style="resize:vertical;"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Club Color</label>
+        <div class="color-swatches" id="colorSwatches">
+          <div class="color-swatch selected" data-color="#3b82f6" style="background:#3b82f6;"></div>
+          <div class="color-swatch" data-color="#8b5cf6" style="background:#8b5cf6;"></div>
+          <div class="color-swatch" data-color="#4CAF50" style="background:#4CAF50;"></div>
+          <div class="color-swatch" data-color="#f59e0b" style="background:#f59e0b;"></div>
+          <div class="color-swatch" data-color="#ec4899" style="background:#ec4899;"></div>
+          <div class="color-swatch" data-color="#06b6d4" style="background:#06b6d4;"></div>
+          <div class="color-swatch" data-color="#0D1B3E" style="background:#0D1B3E;"></div>
+          <div class="color-swatch" data-color="#C8A84B" style="background:#C8A84B;"></div>
+          <div class="color-swatch" data-color="#E74C3C" style="background:#E74C3C;"></div>
+          <div class="color-swatch" data-color="#64748b" style="background:#64748b;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-body modal-step" id="modal-step-2">
+      <div class="form-group">
+        <label class="form-label">Club Email</label>
+        <input class="form-control-ccc" id="club-email" type="email" placeholder="clubname@campus.edu">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Meeting Day</label>
+          <select class="form-control-ccc" id="club-day">
+            <option value="">Select day…</option>
+            <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+            <option>Thursday</option><option>Friday</option><option>Saturday</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Meeting Time</label>
+          <input class="form-control-ccc" id="club-time" type="time">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Meeting Location</label>
+        <input class="form-control-ccc" id="club-location" type="text" placeholder="e.g. Room 204, Building A">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Faculty Adviser</label>
+        <input class="form-control-ccc" id="club-adviser" type="text" placeholder="e.g. Dr. Maria Santos">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Initial Status</label>
+        <select class="form-control-ccc" id="club-status">
+          <option value="Active">Active</option>
+          <option value="Pending">Pending Approval</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-body modal-step" id="modal-step-3">
+      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1rem;line-height:1.55;">
+        Assign a club leader by entering their <strong>Student ID</strong>. The student must already have an account.
+      </p>
+      <div class="form-group">
+        <label class="form-label">Student ID / Code</label>
+        <div style="display:flex;gap:0.5rem;">
+          <input class="form-control-ccc" id="leader-id-input" type="text" placeholder="e.g. 2023-00142" style="flex:1;">
+          <button style="padding:0.5rem 1rem;background:var(--navy);color:var(--white);border:none;border-radius:8px;font-size:0.8rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:background 0.15s;" id="btn-lookup" onclick="lookupStudent()" onmouseover="this.style.background='var(--navy-light)'" onmouseout="this.style.background='var(--navy)'">Look Up</button>
+        </div>
+        <div id="student-result-found" style="margin-top:0.6rem;padding:0.65rem 0.85rem;border-radius:8px;font-size:0.8rem;display:none;align-items:center;gap:0.6rem;background:rgba(76,175,80,0.08);border:1px solid rgba(76,175,80,0.25);">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--navy-light),var(--navy));display:flex;align-items:center;justify-content:center;color:var(--white);font-size:0.75rem;font-weight:600;flex-shrink:0;" id="student-avatar-initials">—</div>
+          <div>
+            <div style="font-weight:600;color:var(--ink);" id="student-result-name">—</div>
+            <div style="font-size:0.7rem;color:var(--muted);" id="student-result-meta">—</div>
+          </div>
+          <i class="fas fa-check-circle" style="color:var(--green);margin-left:auto;font-size:1rem;"></i>
+        </div>
+        <div id="student-result-notfound" style="margin-top:0.6rem;padding:0.65rem 0.85rem;border-radius:8px;font-size:0.8rem;display:none;background:rgba(231,76,60,0.07);border:1px solid rgba(231,76,60,0.2);color:var(--red);">
+          <i class="fas fa-exclamation-circle" style="margin-right:6px;"></i>
+          No student found with that ID.
+        </div>
+      </div>
+      <button style="font-size:0.72rem;font-weight:500;color:var(--navy);background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;margin-top:0.5rem;display:block;text-align:center;" onclick="skipLeader()">Skip for now</button>
+    </div>
+
+    <div class="modal-body modal-step" id="modal-step-4">
+      <div class="modal-success">
+        <div class="success-icon"><i class="fas fa-check"></i></div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--ink);margin-bottom:0.4rem;">Club Created!</div>
+        <div style="font-size:0.82rem;color:var(--muted);line-height:1.6;" id="success-message">
+          The club has been added to the system.
+        </div>
+        <button class="btn-modal-next" style="margin:1.25rem auto 0;display:block;" onclick="closeAddClubModal()">Done</button>
+      </div>
+    </div>
+
+    <div class="modal-footer" id="modal-footer">
+      <button class="btn-modal-back" id="btn-modal-back" onclick="modalBack()" style="visibility:hidden;">← Back</button>
+      <button class="btn-modal-next" id="btn-modal-next" onclick="modalNext()">Continue →</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addEventModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">Add New Event</span>
+      <button class="modal-close" onclick="closeAddEventModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="add-event-form-body">
+      <div class="form-group">
+        <label class="form-label">Event Name <span style="color:var(--red)">*</span></label>
+        <input class="form-control-ccc" id="evt-name" type="text" placeholder="e.g. Annual Science Fair">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Club <span style="color:var(--red)">*</span></label>
+          <input class="form-control-ccc" id="evt-club" type="text" placeholder="e.g. STEM Society" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-control-ccc" id="evt-status">
+            <option value="Upcoming">Upcoming</option>
+            <option value="Pending">Pending</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Date & Time</label>
+          <input class="form-control-ccc" id="evt-date" type="datetime-local">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Location</label>
+          <input class="form-control-ccc" id="evt-location" type="text" placeholder="e.g. Room 201, Bldg A">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Expected Attendees</label>
+        <input class="form-control-ccc" id="evt-attendees" type="number" placeholder="e.g. 40">
+      </div>
+    </div>
+    <div id="add-event-success" style="display:none;">
+      <div class="modal-success">
+        <div class="success-icon"><i class="fas fa-check"></i></div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--ink);margin-bottom:0.4rem;">Event Added!</div>
+        <div style="font-size:0.82rem;color:var(--muted);line-height:1.6;">The event has been added to the system.</div>
+        <button class="btn-modal-next" style="margin:1.25rem auto 0;display:block;" onclick="closeAddEventModal()">Done</button>
+      </div>
+    </div>
+    <div class="modal-footer" id="add-event-footer">
+      <button class="btn-modal-back" onclick="closeAddEventModal()">Cancel</button>
+      <button class="btn-modal-next gold" onclick="submitAddEvent()">Add Event →</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="createStudentModal">
+  <div class="modal-box" style="max-width:440px;">
+    <div class="modal-header">
+      <span class="modal-title">Create Student Account</span>
+      <button class="modal-close" onclick="closeCreateStudentModal()"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="modal-body modal-step active" id="create-step-1">
+      <div class="form-group">
+        <label class="form-label">Student ID <span style="color:var(--red)">*</span></label>
+        <input class="form-control-ccc" id="create-student-id" type="text" placeholder="e.g. 2024-00142">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password <span style="color:var(--red)">*</span></label>
+        <input class="form-control-ccc" id="create-password" type="password" placeholder="Min. 8 characters">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm Password <span style="color:var(--red)">*</span></label>
+        <input class="form-control-ccc" id="create-password-confirm" type="password" placeholder="Re-enter password">
+      </div>
+    </div>
+
+    <div class="modal-body modal-step" id="create-step-3">
+      <div class="modal-success">
+        <div class="success-icon"><i class="fas fa-check"></i></div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--ink);margin-bottom:0.4rem;">Account Created!</div>
+        <div style="font-size:0.82rem;color:var(--muted);line-height:1.6;" id="create-success-message">
+          The student account has been created.
+        </div>
+        <button class="btn-modal-next" style="margin:1.25rem auto 0;display:block;" onclick="closeCreateStudentModal()">Done</button>
+      </div>
+    </div>
+
+    <div class="modal-footer" id="create-modal-footer">
+      <button class="btn-modal-back" onclick="closeCreateStudentModal()">Cancel</button>
+      <button class="btn-modal-next gold" onclick="finishCreateStudent()">Create Account ✓</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="makeOfficerModal">
+  <div class="modal-box" style="max-width:400px;">
+    <div class="modal-header">
+      <span class="modal-title">Promote to Officer</span>
+      <button class="modal-close" onclick="closeMakeOfficerModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.85rem;color:var(--ink);line-height:1.6;margin-bottom:0.5rem;">
+        You are about to promote <strong id="officer-student-name"></strong> to <strong>Officer</strong> status.
+      </p>
+      <p style="font-size:0.78rem;color:var(--muted);line-height:1.55;">
+        Officers can manage club profiles, post announcements, schedule events, and handle membership applications.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-back" onclick="closeMakeOfficerModal()">Cancel</button>
+      <button class="btn-modal-next gold" onclick="confirmMakeOfficer()">Promote ✓</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="removeOfficerModal">
+  <div class="modal-box" style="max-width:400px;">
+    <div class="modal-header">
+      <span class="modal-title">Demote Officer</span>
+      <button class="modal-close" onclick="closeRemoveOfficerModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.85rem;color:var(--ink);line-height:1.6;margin-bottom:0.5rem;">
+        You are about to demote <strong id="remove-officer-student-name"></strong> back to <strong>Student</strong> status.
+      </p>
+      <p style="font-size:0.78rem;color:var(--muted);line-height:1.55;">
+        They will lose officer permissions including club management and content posting access.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-back" onclick="closeRemoveOfficerModal()">Cancel</button>
+      <button class="btn-modal-next" style="background:var(--red);" onclick="confirmRemoveOfficer()">Demote</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script>
+  const API_BASE = '/';
+
+  function getSessionToken() {
+    const direct = localStorage.getItem('ccc_session_id');
+    if (direct) return direct;
+    try {
+      const d = JSON.parse(localStorage.getItem('ccc_user') || '{}');
+      return d.session_id || '';
+    } catch(e) { return ''; }
+  }
+  function authHeaders() {
+    return { 'Content-Type': 'application/json', 'X-Session-Token': getSessionToken() };
+  }
+
+  let allClubs = [];
+  let allUsers = [];
+  let allEvents = [];
+  let allActivities = [];
+  let allAnnouncements = [];
+  let currentUser = null;
+  let confirmedLeader = null;
+  let selectedColor = '#3b82f6';
+  let currentStep = 1;
+  const totalSteps = 3;
+
+  const fakeStudents = {
+    '2023-00142': { name: 'Alexandra Reyes', course: 'BSIT 2A', initials: 'AR' },
+    '2022-00891': { name: 'Carlo Mendoza', course: 'BSA 3B', initials: 'CM' },
+    '2024-00055': { name: 'Maria Luz Villanueva', course: 'BSED 1C', initials: 'MV' },
+  };
+
+ function checkSession() {
+  const token = getSessionToken();
+  console.log('[CCC] admin checkSession fired');
+  console.log('[CCC] token from localStorage:', token);
+  fetch(`${API_BASE}api/validate`, {
+    credentials: 'include',
+    headers: { 'X-Session-Token': token }
+  })
+    .then(r => {
+      console.log('[CCC] validate_session HTTP status:', r.status);
+      return r.json();
+    })
+    .then(data => {
+      console.log('[CCC] validate_session response:', JSON.stringify(data));
+      if (!data.success || !data.user || data.user.role !== 'admin') {
+        sessionStorage.clear();
+        window.location.replace('index.html');
+      } else {
+        currentUser = data.user;
+        loadAllData();
+        setupDate();
+      }
+    })
+    .catch((err) => {
+      console.log('[CCC] validate_session error:', err);
+      window.location.replace('index.html');
+    });
+}
+
+  function loadAllData() {
+    loadClubs();
+    loadUsers();
+    loadEvents();
+    loadActivities();
+    loadAnnouncements();
+  }
+
+  function loadClubs() {
+    fetch(`${API_BASE}clubs.php?action=list`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && data.clubs) {
+          allClubs = data.clubs;
+          renderClubs(allClubs);
+          updateClubStats(allClubs);
+        }
+      })
+      .catch(() => {});
+  }
+
+  function loadUsers() {
+    fetch(`${API_BASE}users.php?action=list`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && data.users) {
+          allUsers = data.users;
+          renderUsers(allUsers);
+          updateUserStats(allUsers);
+        }
+      })
+      .catch(() => {});
+  }
+
+  function loadEvents() {
+    fetch(`${API_BASE}events.php?action=list`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && data.events) {
+          allEvents = data.events;
+          renderEvents(allEvents);
+          updateEventStats(allEvents);
+        }
+      })
+      .catch(() => {});
+  }
+
+  function loadActivities() {
+    allActivities = [];
+    renderActivities(allActivities);
+    updateActivityStats(allActivities);
+  }
+
+  function loadAnnouncements() {
+    allAnnouncements = [];
+    renderAnnouncements(allAnnouncements);
+    updateAnnouncementStats(allAnnouncements);
+  }
+
+  function renderClubs(clubs) {
+    const tbody = document.getElementById('clubs-tbody');
+    const dashTbody = document.getElementById('dashboard-clubs-tbody');
+
+    if (clubs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">No clubs. <a href="#" onclick="openAddClubModal();return false;" style="color:var(--navy);text-decoration:underline;">Add one</a></td></tr>';
+      dashTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">No clubs yet</td></tr>';
+      return;
+    }
+
+    const html = clubs.map(club => `
+      <tr>
+        <td><div class="club-name-cell"><div class="club-avatar" style="background:linear-gradient(135deg,${club.color},${club.color}cc);">${club.name.charAt(0).toUpperCase()}</div><strong>${escHtml(club.name)}</strong></div></td>
+        <td><span class="badge-cat bc-${club.category.toLowerCase()}">${escHtml(club.category)}</span></td>
+        <td>${club.member_count || 0}</td>
+        <td><span class="badge-status bs-${club.status.toLowerCase()}">${escHtml(club.status)}</span></td>
+        <td><button class="tbl-action" onclick="editClub(${club.id})"><i class="fas fa-edit"></i></button><button class="tbl-action del" onclick="deleteClub(${club.id})"><i class="fas fa-trash-alt"></i></button></td>
+      </tr>
+    `).join('');
+
+    tbody.innerHTML = html;
+
+    if (clubs.length > 0) {
+      dashTbody.innerHTML = clubs.slice(0, 5).map(club => `
+        <tr>
+          <td><div class="club-name-cell"><div class="club-avatar" style="background:linear-gradient(135deg,${club.color},${club.color}cc);">${club.name.charAt(0).toUpperCase()}</div><strong>${escHtml(club.name)}</strong></div></td>
+          <td><span class="badge-cat bc-${club.category.toLowerCase()}">${escHtml(club.category)}</span></td>
+          <td>${club.member_count || 0}</td>
+          <td><span class="badge-status bs-${club.status.toLowerCase()}">${escHtml(club.status)}</span></td>
+        </tr>
+      `).join('');
+    }
+  }
+
+  function renderUsers(users) {
+    const tbody = document.getElementById('users-tbody');
+    if (users.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">No users yet</td></tr>';
+      return;
+    }
+    const html = users.map(user => {
+      const actionButtons = user.role === 'admin' ?
+        '<td style="font-size:0.7rem;color:var(--muted);">System Admin</td>' :
+        user.role === 'officer' ?
+        `<td><button class="tbl-action" onclick="openRemoveOfficerModal(${user.id}, '${escHtml(user.first_name)} ${escHtml(user.last_name)}')"><i class="fas fa-arrow-down"></i> Demote</button></td>` :
+        `<td><button class="tbl-action" onclick="openMakeOfficerModal(${user.id}, '${escHtml(user.first_name)} ${escHtml(user.last_name)}')"><i class="fas fa-arrow-up"></i> Promote</button></td>`;
+
+      return `
+        <tr>
+          <td><strong>${escHtml((user.first_name || '') + ' ' + (user.last_name || ''))}</strong></td>
+          <td style="font-size:0.75rem;color:var(--muted);">${escHtml(user.email)}</td>
+          <td style="font-size:0.75rem;color:var(--muted);">${escHtml(user.student_id || '—')}</td>
+          <td><span class="badge-role br-${user.role.toLowerCase()}">${escHtml(user.role)}</span></td>
+          <td><span class="badge-status bs-${user.status.toLowerCase()}">${escHtml(user.status)}</span></td>
+          ${actionButtons}
+        </tr>
+      `;
+    }).join('');
+    tbody.innerHTML = html;
+  }
+
+  function renderEvents(events) {
+    const tbody = document.getElementById('events-tbody');
+
+    if (events.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">No events yet</td></tr>';
+      return;
+    }
+
+    const html = events.map(evt => {
+      const date = evt.event_date ? new Date(evt.event_date).toLocaleDateString() : '—';
+      return `
+        <tr>
+          <td><strong>${escHtml(evt.name)}</strong></td>
+          <td>${escHtml(evt.club_name || '—')}</td>
+          <td>${date}</td>
+          <td><span class="badge-status bs-${evt.status.toLowerCase()}">${escHtml(evt.status)}</span></td>
+          <td><button class="tbl-action" onclick="editEvent(${evt.id})"><i class="fas fa-edit"></i></button><button class="tbl-action del" onclick="deleteEvent(${evt.id})"><i class="fas fa-trash-alt"></i></button></td>
+        </tr>
+      `;
+    }).join('');
+
+    tbody.innerHTML = html;
+  }
+
+  function renderActivities(activities) {
+    const tbody = document.getElementById('activities-tbody');
+
+    if (activities.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">No activities logged yet</td></tr>';
+      return;
+    }
+
+    const html = activities.map(activity => {
+      const date = activity.activity_date ? new Date(activity.activity_date).toLocaleDateString() : '—';
+      return `
+        <tr>
+          <td><strong>${escHtml(activity.name)}</strong></td>
+          <td>${escHtml(activity.club_name || '—')}</td>
+          <td><span class="badge-status" style="background:rgba(59,130,246,0.1);color:var(--blue);">${escHtml(activity.activity_type)}</span></td>
+          <td>${date}</td>
+          <td><span class="badge-status bs-${activity.status.toLowerCase()}">${escHtml(activity.status)}</span></td>
+        </tr>
+      `;
+    }).join('');
+
+    tbody.innerHTML = html;
+  }
+
+  function renderAnnouncements(announcements) {
+    const tbody = document.getElementById('announcements-tbody');
+
+    if (announcements.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">No announcements yet</td></tr>';
+      return;
+    }
+
+    const html = announcements.map(ann => {
+      const created = ann.created_at ? new Date(ann.created_at).toLocaleDateString() : '—';
+      return `
+        <tr>
+          <td><strong>${escHtml(ann.title)}</strong></td>
+          <td>${escHtml(ann.club_name || '—')}</td>
+          <td><span class="badge-status bs-${ann.status.toLowerCase()}">${escHtml(ann.status)}</span></td>
+          <td style="font-size:0.75rem;color:var(--muted);">${created}</td>
+          <td><button class="tbl-action" onclick="editAnnouncement(${ann.id})"><i class="fas fa-edit"></i></button><button class="tbl-action del" onclick="deleteAnnouncement(${ann.id})"><i class="fas fa-trash-alt"></i></button></td>
+        </tr>
+      `;
+    }).join('');
+
+    tbody.innerHTML = html;
+  }
+
+  function updateClubStats(clubs) {
+    const total = clubs.length;
+    const active = clubs.filter(c => c.status === 'Active').length;
+    const pending = clubs.filter(c => c.status === 'Pending').length;
+
+    document.getElementById('clubs-stat-total').textContent = total;
+    document.getElementById('clubs-stat-active').textContent = active;
+    document.getElementById('clubs-stat-pending').textContent = pending;
+    document.getElementById('dash-stat-clubs').textContent = total;
+    document.getElementById('stat-active-clubs').textContent = active;
+    document.getElementById('stat-pending-clubs').textContent = pending;
+    document.getElementById('clubs-count').textContent = `Showing ${total} club${total !== 1 ? 's' : ''}`;
+  }
+
+  function updateUserStats(users) {
+    const total = users.length;
+    const students = users.filter(u => u.role === 'student').length;
+    const officers = users.filter(u => u.role === 'officer').length;
+    const admins = users.filter(u => u.role === 'admin').length;
+
+    document.getElementById('users-stat-total').textContent = total;
+    document.getElementById('users-stat-students').textContent = students;
+    document.getElementById('users-stat-officers').textContent = officers;
+    document.getElementById('users-stat-admins').textContent = admins;
+    document.getElementById('dash-stat-members').textContent = total;
+    document.getElementById('users-count').textContent = `Showing ${total} user${total !== 1 ? 's' : ''}`;
+  }
+
+  function updateEventStats(events) {
+    const total = events.length;
+    const upcoming = events.filter(e => e.status === 'Upcoming').length;
+    const completed = events.filter(e => e.status === 'Completed').length;
+    const pending = events.filter(e => e.status === 'Pending').length;
+
+    document.getElementById('events-stat-total').textContent = total;
+    document.getElementById('events-stat-upcoming').textContent = upcoming;
+    document.getElementById('events-stat-completed').textContent = completed;
+    document.getElementById('events-stat-pending').textContent = pending;
+    document.getElementById('dash-stat-events').textContent = total;
+    document.getElementById('events-count').textContent = `Showing ${total} event${total !== 1 ? 's' : ''}`;
+  }
+
+  function updateActivityStats(activities) {
+    const total = activities.length;
+    const completed = activities.filter(a => a.status === 'Completed').length;
+    const ongoing = activities.filter(a => a.status === 'Ongoing').length;
+    const planned = activities.filter(a => a.status === 'Planned').length;
+
+    document.getElementById('activities-stat-total').textContent = total;
+    document.getElementById('activities-stat-completed').textContent = completed;
+    document.getElementById('activities-stat-ongoing').textContent = ongoing;
+    document.getElementById('activities-stat-planned').textContent = planned;
+    document.getElementById('activities-count').textContent = `Showing ${total} activit${total !== 1 ? 'ies' : 'y'}`;
+  }
+
+  function updateAnnouncementStats(announcements) {
+    const total = announcements.length;
+    const published = announcements.filter(a => a.status === 'Published').length;
+    const pending = announcements.filter(a => a.status === 'Pending').length;
+    const rejected = announcements.filter(a => a.status === 'Rejected').length;
+    const now = new Date();
+    const month = announcements.filter(a => {
+      const created = new Date(a.created_at);
+      return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+    }).length;
+
+    document.getElementById('announcements-stat-published').textContent = published;
+    document.getElementById('announcements-stat-pending').textContent = pending;
+    document.getElementById('announcements-stat-rejected').textContent = rejected;
+    document.getElementById('announcements-stat-month').textContent = month;
+    document.getElementById('announcements-count').textContent = `Showing ${total} announcement${total !== 1 ? 's' : ''}`;
+  }
+
+  function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function filterClubsTable() {
+    const q = document.getElementById('club-search').value.toLowerCase();
+    const cat = document.getElementById('club-cat-filter').value.toLowerCase();
+    
+    document.querySelectorAll('#clubs-tbody tr').forEach(row => {
+      if (row.querySelector('td[colspan]')) return;
+      const text = row.textContent.toLowerCase();
+      const catMatch = !cat || text.includes(cat);
+      row.style.display = (text.includes(q) && catMatch) ? '' : 'none';
+    });
+  }
+
+  function filterUsersTable() {
+    const q = document.getElementById('user-search').value.toLowerCase();
+    const role = document.getElementById('user-role-filter').value.toLowerCase();
+
+    document.querySelectorAll('#users-tbody tr').forEach(row => {
+      if (row.querySelector('td[colspan]')) return;
+      const text = row.textContent.toLowerCase();
+      const roleMatch = !role || text.includes(role);
+      row.style.display = (text.includes(q) && roleMatch) ? '' : 'none';
+    });
+  }
+
+  function filterEventsTable() {
+    const q = document.getElementById('events-search').value.toLowerCase();
+    document.querySelectorAll('#events-tbody tr').forEach(row => {
+      if (row.querySelector('td[colspan]')) return;
+      row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+
+  function filterActivitiesTable() {
+    const q = document.getElementById('activities-search').value.toLowerCase();
+    document.querySelectorAll('#activities-tbody tr').forEach(row => {
+      if (row.querySelector('td[colspan]')) return;
+      row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+
+  function filterAnnouncementsTable() {
+    const q = document.getElementById('announcements-search').value.toLowerCase();
+    const status = document.getElementById('announcements-status-filter').value.toLowerCase();
+
+    document.querySelectorAll('#announcements-tbody tr').forEach(row => {
+      if (row.querySelector('td[colspan]')) return;
+      const text = row.textContent.toLowerCase();
+      const statusMatch = !status || text.includes(status);
+      row.style.display = (text.includes(q) && statusMatch) ? '' : 'none';
+    });
+  }
+
+  function deleteClub(clubId) {
+    if (!confirm('Delete this club?')) return;
+
+    fetch(`${API_BASE}clubs.php?action=delete`, {
+      method: 'POST',
+      headers: authHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({ id: clubId })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          loadClubs();
+        }
+      });
+  }
+
+  function deleteEvent(eventId) {
+    if (!confirm('Delete this event?')) return;
+
+    fetch(`${API_BASE}events.php?action=delete`, {
+      method: 'POST',
+      headers: authHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({ id: eventId })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          loadEvents();
+        }
+      });
+  }
+
+  function deleteAnnouncement(announcementId) {
+    if (!confirm('Delete this announcement?')) return;
+    loadAnnouncements();
+  }
+
+  function editClub(clubId) {
+    alert('Edit functionality coming soon');
+  }
+
+  function editUser(userId) {
+    alert('Edit functionality coming soon');
+  }
+
+  function editEvent(eventId) {
+    alert('Edit functionality coming soon');
+  }
+
+  function editAnnouncement(announcementId) {
+    alert('Edit functionality coming soon');
+  }
+
+  function showSection(name, el) {
+    document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+    document.getElementById('section-' + name).classList.add('active');
+    if (el) el.classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  document.addEventListener('click', function(e) {
+    const sw = e.target.closest('.color-swatch');
+    if (!sw) return;
+    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+    sw.classList.add('selected');
+    selectedColor = sw.dataset.color;
+  });
+
+  function openAddClubModal() {
+    currentStep = 1;
+    confirmedLeader = null;
+    resetModal();
+    document.getElementById('addClubModal').classList.add('open');
+  }
+
+  function closeAddClubModal() {
+    document.getElementById('addClubModal').classList.remove('open');
+  }
+
+  document.getElementById('addClubModal').addEventListener('click', function(e) {
+    if (e.target === this) closeAddClubModal();
+  });
+
+  function resetModal() {
+    for (let i = 1; i <= 4; i++) {
+      const step = document.getElementById('modal-step-' + i);
+      if (step) { step.classList.remove('active'); }
+    }
+    document.getElementById('modal-step-1').classList.add('active');
+    updateStepUI();
+
+    ['club-name','club-email','club-adviser','club-location','club-time','club-desc','leader-id-input'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    ['club-category','club-day','club-status'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.selectedIndex = 0;
+    });
+    document.getElementById('club-year').value = new Date().getFullYear();
+    document.querySelectorAll('.color-swatch').forEach((s,i) => {
+      s.classList.toggle('selected', i === 0);
+    });
+    document.getElementById('student-result-found').style.display = 'none';
+    document.getElementById('student-result-notfound').style.display = 'none';
+    selectedColor = '#3b82f6';
+    confirmedLeader = null;
+  }
+
+  function updateStepUI() {
+    const isSuccess = currentStep > totalSteps;
+    document.getElementById('modal-footer').style.display = isSuccess ? 'none' : '';
+
+    for (let i = 1; i <= 3; i++) {
+      const dot = document.getElementById('sdot-' + i);
+      const line = document.getElementById('sline-' + i);
+      dot.classList.remove('active','done');
+      if (line) line.classList.remove('done');
+
+      if (i < currentStep) { 
+        dot.classList.add('done'); 
+        dot.innerHTML = '<i class="fas fa-check" style="font-size:0.6rem;"></i>'; 
+        if (line) line.classList.add('done'); 
+      }
+      else if (i === currentStep) { 
+        dot.classList.add('active'); 
+        dot.textContent = i; 
+      }
+      else { 
+        dot.textContent = i; 
+      }
+    }
+
+    const backBtn = document.getElementById('btn-modal-back');
+    const nextBtn = document.getElementById('btn-modal-next');
+    backBtn.style.visibility = currentStep > 1 ? 'visible' : 'hidden';
+    if (currentStep === totalSteps) {
+      nextBtn.textContent = 'Create Club ✓';
+      nextBtn.className = 'btn-modal-next gold';
+    } else {
+      nextBtn.textContent = 'Continue →';
+      nextBtn.className = 'btn-modal-next';
+    }
+  }
+
+  function modalNext() {
+    if (currentStep === 1) {
+      const name = document.getElementById('club-name').value.trim();
+      const cat = document.getElementById('club-category').value;
+      if (!name) { alert('Please enter club name'); return; }
+      if (!cat) { alert('Please select category'); return; }
+    }
+
+    if (currentStep === totalSteps) {
+      finishCreateClub();
+      return;
+    }
+
+    document.getElementById('modal-step-' + currentStep).classList.remove('active');
+    currentStep++;
+    document.getElementById('modal-step-' + currentStep).classList.add('active');
+    updateStepUI();
+  }
+
+  function modalBack() {
+    document.getElementById('modal-step-' + currentStep).classList.remove('active');
+    currentStep--;
+    document.getElementById('modal-step-' + currentStep).classList.add('active');
+    updateStepUI();
+  }
+
+  function lookupStudent() {
+    const idVal = document.getElementById('leader-id-input').value.trim();
+    const foundEl = document.getElementById('student-result-found');
+    const notFoundEl = document.getElementById('student-result-notfound');
+    foundEl.style.display = 'none';
+    notFoundEl.style.display = 'none';
+
+    if (!idVal) { 
+      alert('Please enter student ID');
+      return; 
+    }
+
+    const btn = document.getElementById('btn-lookup');
+    btn.textContent = '…'; 
+    btn.disabled = true;
+    
+    setTimeout(() => {
+      btn.textContent = 'Look Up'; 
+      btn.disabled = false;
+      
+      const student = fakeStudents[idVal];
+      if (student) {
+        confirmedLeader = student;
+        document.getElementById('student-avatar-initials').textContent = student.initials;
+        document.getElementById('student-result-name').textContent = student.name;
+        document.getElementById('student-result-meta').textContent = student.course + ' · ID: ' + idVal;
+        foundEl.style.display = 'flex';
+      } else {
+        confirmedLeader = null;
+        notFoundEl.style.display = 'block';
+      }
+    }, 600);
+  }
+
+  function skipLeader() {
+    confirmedLeader = null;
+    finishCreateClub();
+  }
+
+  function finishCreateClub() {
+    const name = document.getElementById('club-name').value.trim();
+    const category = document.getElementById('club-category').value;
+    const year = document.getElementById('club-year').value || new Date().getFullYear();
+    const status = document.getElementById('club-status').value || 'Active';
+    const adviser = document.getElementById('club-adviser').value.trim() || '';
+    const email = document.getElementById('club-email').value.trim() || '';
+    const desc = document.getElementById('club-desc').value.trim() || '';
+    const day = document.getElementById('club-day').value || '';
+    const time = document.getElementById('club-time').value || '';
+    const location = document.getElementById('club-location').value.trim() || '';
+
+    const clubData = {
+      name: name,
+      category: category,
+      year: year,
+      status: status,
+      adviser: adviser,
+      email: email,
+      description: desc,
+      day: day,
+      time: time,
+      location: location,
+      color: selectedColor,
+      leader_id: confirmedLeader ? null : null
+    };
+
+    fetch(`${API_BASE}clubs.php?action=create`, {
+      method: 'POST',
+      headers: authHeaders(),
+      credentials: 'include',
+      body: JSON.stringify(clubData)
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          document.getElementById('modal-step-' + currentStep).classList.remove('active');
+          currentStep = totalSteps + 1;
+          document.getElementById('modal-step-4').classList.add('active');
+          document.getElementById('modal-footer').style.display = 'none';
+
+          const leaderMsg = confirmedLeader
+            ? `<strong>${confirmedLeader.name}</strong> has been assigned as club leader.`
+            : 'No leader assigned yet.';
+          document.getElementById('success-message').innerHTML =
+            `<strong>${name}</strong> has been added to the system. ${leaderMsg}`;
+
+          for (let i = 1; i <= 3; i++) {
+            const dot = document.getElementById('sdot-' + i);
+            dot.classList.remove('active'); 
+            dot.classList.add('done');
+            dot.innerHTML = '<i class="fas fa-check" style="font-size:0.6rem;"></i>';
+            const line = document.getElementById('sline-' + i);
+            if (line) line.classList.add('done');
+          }
+
+          loadClubs();
+        }
+      });
+  }
+
+  function openAddEventModal() {
+    document.getElementById('addEventModal').classList.add('open');
+    document.getElementById('add-event-form-body').style.display = '';
+    document.getElementById('add-event-success').style.display = 'none';
+    document.getElementById('add-event-footer').style.display = '';
+    ['evt-name','evt-date','evt-location','evt-attendees','evt-club'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('evt-status').value = 'Upcoming';
+  }
+
+  function closeAddEventModal() {
+    document.getElementById('addEventModal').classList.remove('open');
+  }
+
+  function submitAddEvent() {
+    const name = document.getElementById('evt-name').value.trim();
+    const club = document.getElementById('evt-club').value.trim();
+    const status = document.getElementById('evt-status').value;
+    const date = document.getElementById('evt-date').value;
+    const location = document.getElementById('evt-location').value.trim();
+    const attendees = document.getElementById('evt-attendees').value.trim() || 0;
+
+    if (!name || !club) {
+      alert('Please fill in Event Name and Club');
+      return;
+    }
+
+    const eventData = {
+      name: name,
+      club: club,
+      status: status,
+      date: date,
+      location: location,
+      attendees: parseInt(attendees) || 0
+    };
+
+    fetch(`${API_BASE}events.php?action=create`, {
+      method: 'POST',
+      headers: authHeaders(),
+      credentials: 'include',
+      body: JSON.stringify(eventData)
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          document.getElementById('add-event-form-body').style.display = 'none';
+          document.getElementById('add-event-success').style.display = '';
+          document.getElementById('add-event-footer').style.display = 'none';
+          loadEvents();
+        }
+      });
+  }
+
+  document.getElementById('addEventModal').addEventListener('click', function(e) {
+    if (e.target === this) closeAddEventModal();
+  });
+
+  function setupDate() {
+    const today = new Date();
+    const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][today.getDay()];
+    const monthName = ['January','February','March','April','May','June','July','August','September','October','November','December'][today.getMonth()];
+    const dateStr = `${dayName}, ${monthName} ${today.getDate()}, ${today.getFullYear()}`;
+    document.getElementById('date-display').textContent = dateStr;
+  }
+
+  function logout() {
+    fetch(`${API_BASE}api/logout`, {
+      method: 'POST',
+      headers: authHeaders(),
+      credentials: 'include'
+    })
+      .then(r => r.json())
+
+      .then(data => {
+        sessionStorage.clear();
+        sessionStorage.setItem('ccc_logged_out', '1');
+        window.location.replace('index.html');
+      })
+      .catch(err => {
+        sessionStorage.clear();
+        sessionStorage.setItem('ccc_logged_out', '1');
+        window.location.replace('index.html');
+      });
+  }
+
+  let selectedUserForOfficer = null;
+  let selectedUserForRemoveOfficer = null;
+
+  function openCreateStudentModal() {
+    resetCreateStudentModal();
+    document.getElementById('createStudentModal').classList.add('open');
+  }
+
+  function closeCreateStudentModal() {
+    document.getElementById('createStudentModal').classList.remove('open');
+  }
+
+  document.getElementById('createStudentModal').addEventListener('click', function(e) {
+    if (e.target === this) closeCreateStudentModal();
+  });
+
+  function resetCreateStudentModal() {
+    document.getElementById('create-step-1').classList.add('active');
+    document.getElementById('create-step-3').classList.remove('active');
+    document.getElementById('create-modal-footer').style.display = '';
+    ['create-student-id','create-password','create-password-confirm'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+  }
+
+  function finishCreateStudent() {
+    const studentId = document.getElementById('create-student-id').value.trim();
+    const password = document.getElementById('create-password').value;
+    const passwordConfirm = document.getElementById('create-password-confirm').value;
+
+    if (!studentId) { alert('Please enter a student ID'); return; }
+    if (password.length < 8) { alert('Password must be at least 8 characters'); return; }
+    if (password !== passwordConfirm) { alert('Passwords do not match'); return; }
+
+    const studentData = {
+      student_id: studentId,
+      password: password,
+      role: 'student'
+    };
+
+    fetch(`${API_BASE}users.php?action=create_student`, {
+      method: 'POST',
+      headers: authHeaders(),
+      credentials: 'include',
+      body: JSON.stringify(studentData),
+      credentials: 'include'
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          document.getElementById('create-step-1').classList.remove('active');
+          document.getElementById('create-step-3').classList.add('active');
+          document.getElementById('create-modal-footer').style.display = 'none';
+          document.getElementById('create-success-message').innerHTML =
+            `Student account <strong>${studentId}</strong> has been created.`;
+          loadUsers();
+        } else {
+          alert(data.message || 'Failed to create student account');
+        }
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        alert('Error creating student account');
+      });
+  }
+
+  function openMakeOfficerModal(userId, userName) {
+    selectedUserForOfficer = userId;
+    document.getElementById('officer-student-name').textContent = userName;
+    document.getElementById('makeOfficerModal').classList.add('open');
+  }
+
+  function closeMakeOfficerModal() {
+    document.getElementById('makeOfficerModal').classList.remove('open');
+    selectedUserForOfficer = null;
+  }
+
+  document.getElementById('makeOfficerModal').addEventListener('click', function(e) {
+    if (e.target === this) closeMakeOfficerModal();
+  });
+
+  function confirmMakeOfficer() {
+    if (!selectedUserForOfficer) return;
+
+    fetch(`${API_BASE}users.php?action=change_role`, {
+      method: 'POST',
+      headers: authHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({ id: selectedUserForOfficer, role: 'officer' }),
+      credentials: 'include'
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          loadUsers();
+          closeMakeOfficerModal();
+        } else {
+          alert(data.message || 'Failed to promote to officer');
+        }
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        alert('Error promoting user');
+      });
+  }
+
+  function openRemoveOfficerModal(userId, userName) {
+    selectedUserForRemoveOfficer = userId;
+    document.getElementById('remove-officer-student-name').textContent = userName;
+    document.getElementById('removeOfficerModal').classList.add('open');
+  }
+
+  function closeRemoveOfficerModal() {
+    document.getElementById('removeOfficerModal').classList.remove('open');
+    selectedUserForRemoveOfficer = null;
+  }
+
+  document.getElementById('removeOfficerModal').addEventListener('click', function(e) {
+    if (e.target === this) closeRemoveOfficerModal();
+  });
+
+  function confirmRemoveOfficer() {
+    if (!selectedUserForRemoveOfficer) return;
+
+    fetch(`${API_BASE}users.php?action=change_role`, {
+      method: 'POST',
+      headers: authHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({ id: selectedUserForRemoveOfficer, role: 'student' }),
+      credentials: 'include'
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          loadUsers();
+          closeRemoveOfficerModal();
+        } else {
+          alert(data.message || 'Failed to demote officer');
+        }
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        alert('Error demoting user');
+      });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    checkSession();
+  });
+</script>
+
+</body>
+</html>
