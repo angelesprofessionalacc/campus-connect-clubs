@@ -1,22 +1,17 @@
-FROM php:8.2-apache
+FROM php:8.2-fpm
 
-RUN rm -f /etc/apache2/mods-enabled/mpm_*.load \
-           /etc/apache2/mods-enabled/mpm_*.conf \
-    && ln -s /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load \
-    && ln -s /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf \
-    && ln -s /etc/apache2/mods-available/rewrite.load /etc/apache2/mods-enabled/rewrite.load \
-    && ln -s /etc/apache2/mods-available/headers.load /etc/apache2/mods-enabled/headers.load
+RUN apt-get update && apt-get install -y nginx && rm -rf /var/lib/apt/lists/*
 
 RUN docker-php-ext-install pdo pdo_mysql
 
 COPY . /var/www/html/
 
-RUN echo '<Directory /var/www/html>\n\
-    Options Indexes FollowSymLinks\n\
-    AllowOverride All\n\
-    Require all granted\n\
-</Directory>' >> /etc/apache2/apache2.conf
-
 RUN chown -R www-data:www-data /var/www/html
 
+COPY nginx.conf /etc/nginx/sites-available/default
+
+RUN echo '#!/bin/sh\nphp-fpm -D\nnginx -g "daemon off;"' > /start.sh && chmod +x /start.sh
+
 EXPOSE 80
+
+CMD ["/start.sh"]
