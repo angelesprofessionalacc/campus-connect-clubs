@@ -10,7 +10,8 @@ RUN chown -R www-data:www-data /var/www/html
 
 COPY nginx.conf /etc/nginx/sites-available/default
 
-RUN echo '#!/bin/sh\nphp-fpm -D\nnginx -g "daemon off;"' > /start.sh && chmod +x /start.sh
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
 EXPOSE 80
 
