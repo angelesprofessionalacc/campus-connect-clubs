@@ -1,0 +1,6 @@
+[deploy]
+startCommand = "php -S 0.0.0.0:8080 router.php"
+healthcheckPath = "/"
+
+[environments.production.deploy]
+startCommand = "php -S 0.0.0.0:8080 router.php"
