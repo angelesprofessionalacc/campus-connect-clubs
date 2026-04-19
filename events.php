@@ -41,8 +41,7 @@ if ($method === 'GET' && $action === 'list') {
     echo json_encode(['success' => true, 'events' => $stmt->fetchAll()]);
 
 } elseif ($method === 'POST' && $action === 'create') {
-    $data = json_decode(file_get_contents('php:
-
+    $data = json_decode(file_get_contents('php://input'), true);
     $clubId = null;
     if (!empty($data['club'])) {
         $cs = $pdo->prepare("SELECT id FROM clubs WHERE name = ? LIMIT 1");
@@ -63,7 +62,7 @@ if ($method === 'GET' && $action === 'list') {
     echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
 
 } elseif ($method === 'POST' && $action === 'delete') {
-    $data = json_decode(file_get_contents('php:
+    $data = json_decode(file_get_contents('php://input'), true);
     $stmt = $pdo->prepare("DELETE FROM events WHERE id = ?");
     $stmt->execute([$data['id']]);
     echo json_encode(['success' => true]);
