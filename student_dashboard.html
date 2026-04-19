@@ -1053,13 +1053,13 @@
   }
 
   function checkSession() {
-    fetch(`${API_BASE}api/validate`, {
+    fetch(`${API_BASE}auth.php?action=validate_session`, {
       credentials: 'include',
       headers: { 'X-Session-Token': getSessionToken() }
     })
       .then(r => r.json())
       .then(data => {
-        if (!data.success || !data.user || data.user.role !== 'student') {
+        if (!data.success || !data.user || (data.user.role !== 'student' && data.user.role !== 'officer')) {
           sessionStorage.clear();
           window.location.replace('index.html');
         } else {
@@ -1093,7 +1093,7 @@
   }
 
   function logout() {
-    fetch(`${API_BASE}api/logout`, {
+    fetch(`${API_BASE}auth.php?action=logout`, {
       method: 'POST',
       headers: authHeaders(),
       credentials: 'include'
