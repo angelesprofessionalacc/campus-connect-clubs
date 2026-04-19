@@ -41,7 +41,7 @@ if ($method === 'GET' && $action === 'list') {
     echo json_encode(['success' => true, 'clubs' => $stmt->fetchAll()]);
 
 } elseif ($method === 'POST' && $action === 'create') {
-    $data = json_decode(file_get_contents('php://input'), true);
+    $data = json_decode(file_get_contents('php:
     $stmt = $pdo->prepare("INSERT INTO clubs (name, category, status, adviser, email, description, day, time, location, color, year, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
     $stmt->execute([
         $data['name'] ?? '',
@@ -53,19 +53,19 @@ if ($method === 'GET' && $action === 'list') {
         $data['day'] ?? '',
         $data['time'] ?? '',
         $data['location'] ?? '',
-        $data['color'] ?? '#3b82f6',
+        $data['color'] ?? '
         $data['year'] ?? date('Y'),
     ]);
     echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
 
 } elseif ($method === 'POST' && $action === 'delete') {
-    $data = json_decode(file_get_contents('php://input'), true);
+    $data = json_decode(file_get_contents('php:
     $stmt = $pdo->prepare("DELETE FROM clubs WHERE id = ?");
     $stmt->execute([$data['id']]);
     echo json_encode(['success' => true]);
 
 } elseif ($method === 'POST' && $action === 'update') {
-    $data = json_decode(file_get_contents('php://input'), true);
+    $data = json_decode(file_get_contents('php:
     $stmt = $pdo->prepare("UPDATE clubs SET name=?, category=?, status=?, adviser=?, email=?, description=?, location=? WHERE id=?");
     $stmt->execute([
         $data['name'] ?? '',
