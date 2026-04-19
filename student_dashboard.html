@@ -1067,7 +1067,10 @@
           const uid = data.user.student_id || '—';
           const name = data.user.first_name || 'Student';
           document.getElementById('sidebar-uid').textContent = uid;
-          document.getElementById('topbar-user').textContent = uid;
+          const displayName = (data.user.first_name ? data.user.first_name + ' ' + (data.user.last_name || '') : uid).trim();
+          document.getElementById('topbar-user').textContent = displayName || uid;
+          const initS = (data.user.first_name || uid || 'S')[0].toUpperCase();
+          document.getElementById('topbar-avatar-s').textContent = initS;
           document.getElementById('greet-name').textContent = name;
         }
       })
@@ -1092,6 +1095,19 @@
     document.getElementById('topbar-title').textContent = titles[id] || 'Dashboard';
   }
 
+  function openProfileModal() {
+    if (!currentUser) return;
+    const name = ((currentUser.first_name || '') + ' ' + (currentUser.last_name || '')).trim() || currentUser.student_id || 'Student';
+    document.getElementById('sp-name').textContent = name;
+    document.getElementById('sp-id').textContent = currentUser.student_id || '—';
+    document.getElementById('sp-role').textContent = currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1);
+    document.getElementById('sp-since').textContent = currentUser.created_at ? new Date(currentUser.created_at).toLocaleDateString() : '—';
+    document.getElementById('sp-avatar').textContent = (currentUser.first_name || currentUser.student_id || 'S')[0].toUpperCase();
+    document.getElementById('studentProfileModal').classList.add('open');
+  }
+  function closeProfileModal() {
+    document.getElementById('studentProfileModal').classList.remove('open');
+  }
   function logout() {
     fetch(`${API_BASE}auth.php?action=logout`, {
       method: 'POST',
@@ -1455,6 +1471,50 @@
 
   renderActivityRecords();
 
+</script>
+
+<div class="modal-overlay" id="studentProfileModal" style="display:none;position:fixed;inset:0;background:rgba(13,27,62,0.45);backdrop-filter:blur(3px);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:16px;width:100%;max-width:360px;padding:0;box-shadow:0 20px 60px rgba(13,27,62,0.22);overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid #C8D8EA;">
+      <span style="font-family:Playfair Display,serif;font-size:1rem;color:#0D1B3E;">My Account</span>
+      <button onclick="closeProfileModal()" style="background:none;border:none;cursor:pointer;color:#5A6E8A;font-size:1rem;"><i class="fas fa-times"></i></button>
+    </div>
+    <div style="padding:1.5rem 1.25rem;">
+      <div style="text-align:center;margin-bottom:1.25rem;">
+        <div id="sp-avatar" style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#1E3160,#0D1B3E);color:white;font-size:1.3rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 0.75rem;">S</div>
+        <div style="font-family:Playfair Display,serif;font-size:1.05rem;color:#0D1B3E;" id="sp-name">Student</div>
+        <div style="font-size:0.75rem;color:#5A6E8A;" id="sp-role">Student</div>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid #C8D8EA;font-size:0.82rem;">
+          <span style="color:#5A6E8A;font-weight:500;">Student ID</span>
+          <span style="color:#0D1B3E;" id="sp-id">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:0.5rem 0;font-size:0.82rem;">
+          <span style="color:#5A6E8A;font-weight:500;">Member since</span>
+          <span style="color:#0D1B3E;" id="sp-since">—</span>
+        </div>
+      </div>
+      <button onclick="logout()" style="width:100%;margin-top:1.25rem;padding:0.6rem;background:#FDF3F2;border:1.5px solid #E8C4C0;border-radius:8px;color:#C0392B;font-family:Outfit,sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">
+        <i class="fas fa-sign-out-alt" style="margin-right:0.4rem;"></i>Log Out
+      </button>
+    </div>
+  </div>
+</div>
+<script>
+  document.getElementById('studentProfileModal').style.display = 'none';
+  document.getElementById('studentProfileModal').addEventListener('click', function(e) {
+    if (e.target === this) closeProfileModal();
+  });
+  const _origOpen = window.openProfileModal;
+  window.openProfileModal = function() {
+    document.getElementById('studentProfileModal').style.display = 'flex';
+    if (_origOpen) _origOpen();
+  };
+  const _origClose = window.closeProfileModal;
+  window.closeProfileModal = function() {
+    document.getElementById('studentProfileModal').style.display = 'none';
+  };
 </script>
 </body>
 </html>
