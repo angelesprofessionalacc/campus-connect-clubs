@@ -41,7 +41,7 @@ if ($method === 'GET' && $action === 'list') {
     echo json_encode(['success' => true, 'events' => $stmt->fetchAll()]);
 
 } elseif ($method === 'POST' && $action === 'create') {
-    $data = json_decode(file_get_contents('php://input'), true);
+    $data = json_decode(file_get_contents('php:
 
     $clubId = null;
     if (!empty($data['club'])) {
@@ -63,7 +63,7 @@ if ($method === 'GET' && $action === 'list') {
     echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
 
 } elseif ($method === 'POST' && $action === 'delete') {
-    $data = json_decode(file_get_contents('php://input'), true);
+    $data = json_decode(file_get_contents('php:
     $stmt = $pdo->prepare("DELETE FROM events WHERE id = ?");
     $stmt->execute([$data['id']]);
     echo json_encode(['success' => true]);
