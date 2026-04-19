@@ -598,7 +598,7 @@ function checkExistingSession() {
   const token = getSessionToken();
   console.log('[CCC] checkExistingSession fired');
   console.log('[CCC] token from localStorage:', token);
-  fetch(`${API_BASE}auth.php?action=validate_session`, {
+  fetch(`${API_BASE}api/validate`, {
     credentials: 'include',
     headers: { 'X-Session-Token': token }
   })
@@ -635,7 +635,7 @@ function handleStudentLogin(e) {
   }
   btn.disabled = true;
   btn.innerHTML = '<span class="loading-spinner"></span>Signing in...';
-  fetch(`${API_BASE}auth.php?action=login_student`, {
+  fetch(`${API_BASE}api/login_student`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
@@ -675,7 +675,7 @@ function handleAdminLogin(e) {
   }
   btn.disabled = true;
   btn.innerHTML = '<span class="loading-spinner"></span>Signing in...';
-  fetch(`${API_BASE}auth.php?action=login`, {
+  fetch(`${API_BASE}api/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
@@ -742,7 +742,7 @@ function handleAdminLogin(e) {
     btn.disabled = true;
     btn.innerHTML = '<span class="loading-spinner"></span>Creating account...';
 
-    fetch(`${API_BASE}auth.php?action=register_admin`, {
+    fetch(`${API_BASE}api/register_admin`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
