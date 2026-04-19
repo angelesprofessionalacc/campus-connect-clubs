@@ -57,8 +57,10 @@ if ($method === 'GET' && $action === 'list') {
         exit;
     }
 
-    $stmt = $pdo->prepare("INSERT INTO users (student_id, password, role, created_at) VALUES (?, ?, 'student', NOW())");
-    $stmt->execute([$studentId, password_hash($password, PASSWORD_DEFAULT)]);
+    $firstName = $data['first_name'] ?? '';
+    $lastName  = $data['last_name'] ?? '';
+    $stmt = $pdo->prepare("INSERT INTO users (first_name, last_name, student_id, password, role, created_at) VALUES (?, ?, ?, ?, 'student', NOW())");
+    $stmt->execute([$firstName, $lastName, $studentId, password_hash($password, PASSWORD_DEFAULT)]);
     echo json_encode(['success' => true]);
 
 } elseif ($method === 'POST' && $action === 'change_role') {
