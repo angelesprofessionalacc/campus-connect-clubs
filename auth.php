@@ -57,7 +57,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';
 
 if ($method === 'POST') {
-    $data = json_decode(file_get_contents('php://input'), true);
+    $data = json_decode(file_get_contents('php:
 
     if ($action === 'login') {
         $email    = $data['email'] ?? '';
