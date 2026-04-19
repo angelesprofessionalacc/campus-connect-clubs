@@ -23,9 +23,10 @@ if (isset($routes[$uri])) {
     exit;
 }
 
-if (is_file(__DIR__ . $uri)) {
+
+if ($uri !== '/' && is_file(__DIR__ . $uri)) {
     return false;
 }
 
-http_response_code(404);
-echo '404 Not Found';
+
+require __DIR__ . '/index.html';
