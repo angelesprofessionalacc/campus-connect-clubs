@@ -28,8 +28,29 @@ if (isset($resourceRoutes[$uri])) {
     exit;
 }
 
-if ($uri !== '/' && is_file(__DIR__ . $uri)) {
-    return false;
+$filePath = __DIR__ . $uri;
+
+if ($uri !== '/' && file_exists($filePath) && !is_dir($filePath)) {
+    $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+    $mimeTypes = [
+        'html' => 'text/html',
+        'css'  => 'text/css',
+        'js'   => 'application/javascript',
+        'png'  => 'image/png',
+        'jpg'  => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'gif'  => 'image/gif',
+        'svg'  => 'image/svg+xml',
+        'ico'  => 'image/x-icon',
+        'json' => 'application/json',
+        'woff' => 'font/woff',
+        'woff2'=> 'font/woff2',
+    ];
+    if (isset($mimeTypes[$ext])) {
+        header('Content-Type: ' . $mimeTypes[$ext]);
+    }
+    readfile($filePath);
+    exit;
 }
 
 require __DIR__ . '/index.html';
