@@ -77,6 +77,20 @@ if ($method === 'GET' && $action === 'list') {
     $stmt->execute([$role, $id]);
     echo json_encode(['success' => true]);
 
+} elseif ($method === 'POST' && $action === 'delete') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    $id = $data['id'] ?? '';
+    $check = $pdo->prepare("SELECT role FROM users WHERE id = ? LIMIT 1");
+    $check->execute([$id]);
+    $row = $check->fetch();
+    if (!$row || $row['role'] === 'admin') {
+        echo json_encode(['success' => false, 'error' => 'Cannot delete this user']);
+        exit;
+    }
+    $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
+    $stmt->execute([$id]);
+    echo json_encode(['success' => true]);
+
 } else {
     echo json_encode(['success' => false, 'error' => 'Unknown action']);
 }
