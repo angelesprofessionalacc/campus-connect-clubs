@@ -64,6 +64,21 @@ if ($method === 'GET' && $action === 'list') {
     $stmt->execute([$data['id']]);
     echo json_encode(['success' => true]);
 
+} elseif ($method === 'POST' && $action === 'update') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    $stmt = $pdo->prepare("UPDATE clubs SET name=?, category=?, status=?, adviser=?, email=?, description=?, location=? WHERE id=?");
+    $stmt->execute([
+        $data['name'] ?? '',
+        $data['category'] ?? '',
+        $data['status'] ?? 'Active',
+        $data['adviser'] ?? '',
+        $data['email'] ?? '',
+        $data['description'] ?? '',
+        $data['location'] ?? '',
+        $data['id'],
+    ]);
+    echo json_encode(['success' => true]);
+
 } else {
     echo json_encode(['success' => false, 'error' => 'Unknown action']);
 }
