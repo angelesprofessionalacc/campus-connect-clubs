@@ -187,78 +187,35 @@
     .topbar-right { display: flex; align-items: center; gap: 1rem; }
 
     .topbar-profile-btn {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: var(--field-bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 0.35rem 0.75rem 0.35rem 0.4rem;
-      cursor: pointer;
-      font-family: 'Outfit', sans-serif;
-      font-size: 0.82rem;
-      font-weight: 500;
-      color: var(--ink);
-      transition: border-color 0.15s, box-shadow 0.15s;
+      display:flex;align-items:center;gap:0.5rem;background:var(--field-bg);
+      border:1px solid var(--border);border-radius:10px;padding:0.35rem 0.75rem 0.35rem 0.4rem;
+      cursor:pointer;font-family:'Outfit',sans-serif;font-size:0.82rem;font-weight:500;color:var(--ink);
+      transition:border-color 0.15s,box-shadow 0.15s;
     }
-    .topbar-profile-btn:hover {
-      border-color: var(--navy-light);
-      box-shadow: 0 0 0 3px rgba(30,49,96,0.06);
-    }
+    .topbar-profile-btn:hover { border-color:var(--navy-light);box-shadow:0 0 0 3px rgba(30,49,96,0.06); }
     .topbar-avatar {
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--navy-light), var(--navy));
-      color: white;
-      font-size: 0.7rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .profile-card {
-      text-align: center;
-      padding: 0.5rem 0 1rem;
+      width:28px;height:28px;border-radius:50%;
+      background:linear-gradient(135deg,var(--navy-light),var(--navy));
+      color:white;font-size:0.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;
     }
     .profile-avatar-lg {
-      width: 64px; height: 64px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--navy-light), var(--navy));
-      color: white;
-      font-size: 1.4rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 0.85rem;
+      width:64px;height:64px;border-radius:50%;
+      background:linear-gradient(135deg,var(--navy-light),var(--navy));
+      color:white;font-size:1.4rem;font-weight:700;display:flex;align-items:center;justify-content:center;
+      margin:0 auto 0.85rem;
     }
     .profile-detail-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.55rem 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.82rem;
+      display:flex;justify-content:space-between;align-items:center;
+      padding:0.55rem 0;border-bottom:1px solid var(--border);font-size:0.82rem;
     }
-    .profile-detail-row:last-child { border-bottom: none; }
-    .profile-detail-label { color: var(--muted); font-weight: 500; }
-    .profile-detail-value { color: var(--ink); font-weight: 400; }
+    .profile-detail-row:last-child { border-bottom:none; }
+    .profile-detail-label { color:var(--muted);font-weight:500; }
     .btn-logout-red {
-      width: 100%;
-      margin-top: 1.25rem;
-      padding: 0.6rem;
-      background: #FDF3F2;
-      border: 1.5px solid #E8C4C0;
-      border-radius: 8px;
-      color: #C0392B;
-      font-family: 'Outfit', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s;
+      width:100%;margin-top:1.25rem;padding:0.6rem;background:#FDF3F2;
+      border:1.5px solid #E8C4C0;border-radius:8px;color:#C0392B;
+      font-family:'Outfit',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;
     }
-    .btn-logout-red:hover { background: #FAE5E3; }
-
+    .btn-logout-red:hover { background:#FAE5E3; }
     .topbar-admin-label {
       font-size: 0.78rem;
       font-weight: 500;
@@ -1082,6 +1039,10 @@
     </div>
 
     <div class="modal-body modal-step active" id="create-step-1">
+      <div style="display:flex;gap:0.6rem;">
+        <div class="form-group" style="flex:1"><label class="form-label">First Name <span style="color:var(--red)">*</span></label><input class="form-control-ccc" id="create-first-name" type="text" placeholder="Juan"></div>
+        <div class="form-group" style="flex:1"><label class="form-label">Last Name <span style="color:var(--red)">*</span></label><input class="form-control-ccc" id="create-last-name" type="text" placeholder="Dela Cruz"></div>
+      </div>
       <div class="form-group">
         <label class="form-label">Student ID <span style="color:var(--red)">*</span></label>
         <input class="form-control-ccc" id="create-student-id" type="text" placeholder="e.g. 2024-00142">
@@ -1194,7 +1155,7 @@
   const token = getSessionToken();
   console.log('[CCC] admin checkSession fired');
   console.log('[CCC] token from localStorage:', token);
-  fetch(`${API_BASE}api/validate`, {
+  fetch(`${API_BASE}auth.php?action=validate_session`, {
     credentials: 'include',
     headers: { 'X-Session-Token': token }
   })
@@ -1209,10 +1170,10 @@
         window.location.replace('index.html');
       } else {
         currentUser = data.user;
-        const displayName = (data.user.first_name || '') + ' ' + (data.user.last_name || '');
-        const initials = ((data.user.first_name || 'A')[0] + (data.user.last_name || '')[0]).toUpperCase();
-        document.getElementById('topbar-name-label').textContent = displayName.trim() || data.user.email || 'Admin';
-        document.getElementById('topbar-avatar').textContent = initials || 'A';
+        const displayName = ((data.user.first_name || '') + ' ' + (data.user.last_name || '')).trim() || data.user.email || 'Admin';
+        const initials = ((data.user.first_name || 'A')[0] + ((data.user.last_name || '')[0] || '')).toUpperCase();
+        document.getElementById('topbar-name-label').textContent = displayName;
+        document.getElementById('topbar-avatar').textContent = initials;
         loadAllData();
         setupDate();
       }
@@ -1322,19 +1283,17 @@
       tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">No users yet</td></tr>';
       return;
     }
-    const sorted = [...users].sort((a, b) => {
-      if (a.role === 'admin' && b.role !== 'admin') return 1;
-      if (a.role !== 'admin' && b.role === 'admin') return -1;
-      const nameA = ((a.first_name || '') + ' ' + (a.last_name || '')).trim().toLowerCase();
-      const nameB = ((b.first_name || '') + ' ' + (b.last_name || '')).trim().toLowerCase();
-      return nameA.localeCompare(nameB);
+    const sorted = [...users].sort((a,b) => {
+      if (a.role==='admin' && b.role!=='admin') return 1;
+      if (a.role!=='admin' && b.role==='admin') return -1;
+      return ((a.first_name||'')+(a.last_name||'')).localeCompare((b.first_name||'')+(b.last_name||''));
     });
     const html = sorted.map(user => {
       const actionButtons = user.role === 'admin' ?
         '<td style="font-size:0.7rem;color:var(--muted);">System Admin</td>' :
         user.role === 'officer' ?
-        `<td style="display:flex;gap:0.3rem;"><button class="tbl-action" onclick="openRemoveOfficerModal(${user.id}, '${escHtml(user.first_name)} ${escHtml(user.last_name)}')"><i class="fas fa-arrow-down"></i> Demote</button><button class="tbl-action del" onclick="deleteUser(${user.id}, '${escHtml(user.first_name)} ${escHtml(user.last_name)}')"><i class="fas fa-trash-alt"></i></button></td>` :
-        `<td style="display:flex;gap:0.3rem;"><button class="tbl-action" onclick="openMakeOfficerModal(${user.id}, '${escHtml(user.first_name)} ${escHtml(user.last_name)}')"><i class="fas fa-arrow-up"></i> Promote</button><button class="tbl-action del" onclick="deleteUser(${user.id}, '${escHtml(user.first_name)} ${escHtml(user.last_name)}')"><i class="fas fa-trash-alt"></i></button></td>`;
+        `<td><button class="tbl-action" onclick="openRemoveOfficerModal(${user.id}, '${escHtml(user.first_name)} ${escHtml(user.last_name)}')"><i class="fas fa-arrow-down"></i> Demote</button></td>` :
+        `<td><button class="tbl-action" onclick="openMakeOfficerModal(${user.id}, '${escHtml(user.first_name)} ${escHtml(user.last_name)}')"><i class="fas fa-arrow-up"></i> Promote</button></td>`;
 
       return `
         <tr>
@@ -1551,21 +1510,6 @@
     });
   }
 
-  function deleteUser(userId, userName) {
-    if (!confirm('Delete user ' + userName + '? This cannot be undone.')) return;
-    fetch(`${API_BASE}api/users?action=delete`, {
-      method: 'POST',
-      headers: authHeaders(),
-      credentials: 'include',
-      body: JSON.stringify({ id: userId })
-    })
-      .then(r => r.json())
-      .then(data => {
-        if (data.success) loadUsers();
-        else alert(data.error || 'Failed to delete user');
-      });
-  }
-
   function deleteClub(clubId) {
     if (!confirm('Delete this club?')) return;
 
@@ -1614,46 +1558,7 @@
   }
 
   function editEvent(eventId) {
-    const evt = allEvents.find(e => e.id === eventId);
-    if (!evt) return;
-    document.getElementById('edit-event-id').value = evt.id;
-    document.getElementById('edit-evt-name').value = evt.name || '';
-    document.getElementById('edit-evt-club').value = evt.club_name || '';
-    document.getElementById('edit-evt-status').value = evt.status || 'Upcoming';
-    document.getElementById('edit-evt-date').value = evt.event_date ? evt.event_date.split('T')[0] : '';
-    document.getElementById('edit-evt-location').value = evt.location || '';
-    document.getElementById('edit-evt-attendees').value = evt.attendees || '';
-    document.getElementById('editEventModal').classList.add('open');
-  }
-
-  function closeEditEventModal() {
-    document.getElementById('editEventModal').classList.remove('open');
-  }
-
-  function submitEditEvent() {
-    const id = document.getElementById('edit-event-id').value;
-    const name = document.getElementById('edit-evt-name').value.trim();
-    const club = document.getElementById('edit-evt-club').value.trim();
-    if (!name || !club) { alert('Event name and club are required'); return; }
-    fetch(`${API_BASE}api/events?action=update`, {
-      method: 'POST',
-      headers: authHeaders(),
-      credentials: 'include',
-      body: JSON.stringify({
-        id: id,
-        name: name,
-        club: club,
-        status: document.getElementById('edit-evt-status').value,
-        date: document.getElementById('edit-evt-date').value,
-        location: document.getElementById('edit-evt-location').value.trim(),
-        attendees: parseInt(document.getElementById('edit-evt-attendees').value) || 0,
-      })
-    })
-      .then(r => r.json())
-      .then(data => {
-        if (data.success) { closeEditEventModal(); loadEvents(); }
-        else alert(data.error || 'Failed to update event');
-      });
+    alert('Edit functionality coming soon');
   }
 
   function editAnnouncement(announcementId) {
@@ -1946,14 +1851,26 @@
     document.getElementById('date-display').textContent = dateStr;
   }
 
+  function deleteUser(userId, userName) {
+    if (!confirm('Delete ' + userName + '? This cannot be undone.')) return;
+    fetch(`${API_BASE}api/users?action=delete`, {
+      method: 'POST', headers: authHeaders(), credentials: 'include',
+      body: JSON.stringify({ id: userId })
+    }).then(r => r.json()).then(data => {
+      if (data.success) loadUsers();
+      else alert(data.error || 'Failed to delete user');
+    });
+  }
+
   function openProfileModal() {
     if (!currentUser) return;
-    document.getElementById('profile-name').textContent = (currentUser.first_name || '') + ' ' + (currentUser.last_name || '');
+    const name = ((currentUser.first_name||'')+ ' '+(currentUser.last_name||'')).trim();
+    const init = ((currentUser.first_name||'A')[0]+((currentUser.last_name||'')[0]||'')).toUpperCase();
+    document.getElementById('profile-avatar-lg').textContent = init;
+    document.getElementById('profile-name').textContent = name || currentUser.email;
+    document.getElementById('profile-role').textContent = currentUser.role.charAt(0).toUpperCase()+currentUser.role.slice(1);
     document.getElementById('profile-email').textContent = currentUser.email || '—';
-    document.getElementById('profile-role').textContent = currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1);
     document.getElementById('profile-since').textContent = currentUser.created_at ? new Date(currentUser.created_at).toLocaleDateString() : '—';
-    const pi = ((currentUser.first_name || 'A')[0] + (currentUser.last_name || '')[0]).toUpperCase();
-    document.getElementById('profile-avatar-lg').textContent = pi || 'A';
     document.getElementById('profileModal').classList.add('open');
   }
 
@@ -1961,8 +1878,84 @@
     document.getElementById('profileModal').classList.remove('open');
   }
 
+  function editClub(clubId) {
+    const club = allClubs.find(c => c.id === clubId);
+    if (!club) return;
+    document.getElementById('edit-club-id').value = club.id;
+    document.getElementById('edit-club-name').value = club.name || '';
+    document.getElementById('edit-club-category').value = club.category || '';
+    document.getElementById('edit-club-status').value = club.status || 'Active';
+    document.getElementById('edit-club-adviser').value = club.adviser || '';
+    document.getElementById('edit-club-email').value = club.email || '';
+    document.getElementById('edit-club-location').value = club.location || '';
+    document.getElementById('edit-club-desc').value = club.description || '';
+    document.getElementById('editClubModal').classList.add('open');
+  }
+
+  function closeEditClubModal() {
+    document.getElementById('editClubModal').classList.remove('open');
+  }
+
+  function submitEditClub() {
+    const id = document.getElementById('edit-club-id').value;
+    const name = document.getElementById('edit-club-name').value.trim();
+    const category = document.getElementById('edit-club-category').value;
+    if (!name || !category) { alert('Name and category are required'); return; }
+    fetch(`${API_BASE}api/clubs?action=update`, {
+      method: 'POST', headers: authHeaders(), credentials: 'include',
+      body: JSON.stringify({
+        id, name, category,
+        status: document.getElementById('edit-club-status').value,
+        adviser: document.getElementById('edit-club-adviser').value.trim(),
+        email: document.getElementById('edit-club-email').value.trim(),
+        location: document.getElementById('edit-club-location').value.trim(),
+        description: document.getElementById('edit-club-desc').value.trim(),
+      })
+    }).then(r => r.json()).then(data => {
+      if (data.success) { closeEditClubModal(); loadClubs(); }
+      else alert(data.error || 'Failed to update club');
+    });
+  }
+
+  function editEvent(eventId) {
+    const evt = allEvents.find(e => e.id === eventId);
+    if (!evt) return;
+    document.getElementById('edit-event-id').value = evt.id;
+    document.getElementById('edit-evt-name').value = evt.name || '';
+    document.getElementById('edit-evt-club').value = evt.club_name || '';
+    document.getElementById('edit-evt-status').value = evt.status || 'Upcoming';
+    document.getElementById('edit-evt-date').value = evt.event_date ? evt.event_date.split('T')[0] : '';
+    document.getElementById('edit-evt-location').value = evt.location || '';
+    document.getElementById('edit-evt-attendees').value = evt.attendees || '';
+    document.getElementById('editEventModal').classList.add('open');
+  }
+
+  function closeEditEventModal() {
+    document.getElementById('editEventModal').classList.remove('open');
+  }
+
+  function submitEditEvent() {
+    const id = document.getElementById('edit-event-id').value;
+    const name = document.getElementById('edit-evt-name').value.trim();
+    const club = document.getElementById('edit-evt-club').value.trim();
+    if (!name || !club) { alert('Event name and club are required'); return; }
+    fetch(`${API_BASE}api/events?action=update`, {
+      method: 'POST', headers: authHeaders(), credentials: 'include',
+      body: JSON.stringify({
+        id, name, club,
+        status: document.getElementById('edit-evt-status').value,
+        date: document.getElementById('edit-evt-date').value,
+        location: document.getElementById('edit-evt-location').value.trim(),
+        attendees: parseInt(document.getElementById('edit-evt-attendees').value) || 0,
+      })
+    }).then(r => r.json()).then(data => {
+      if (data.success) { closeEditEventModal(); loadEvents(); }
+      else alert(data.error || 'Failed to update event');
+    });
+  }
+
   function logout() {
-    fetch(`${API_BASE}api/logout`, {
+    fetch(`${API_BASE}auth.php?action=logout`, {
       method: 'POST',
       headers: authHeaders(),
       credentials: 'include'
@@ -2001,22 +1994,27 @@
     document.getElementById('create-step-1').classList.add('active');
     document.getElementById('create-step-3').classList.remove('active');
     document.getElementById('create-modal-footer').style.display = '';
-    ['create-student-id','create-password','create-password-confirm'].forEach(id => {
+    ['create-first-name','create-last-name','create-student-id','create-password','create-password-confirm'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.value = '';
     });
   }
 
   function finishCreateStudent() {
+    const firstName = document.getElementById('create-first-name').value.trim();
+    const lastName = document.getElementById('create-last-name').value.trim();
     const studentId = document.getElementById('create-student-id').value.trim();
     const password = document.getElementById('create-password').value;
     const passwordConfirm = document.getElementById('create-password-confirm').value;
 
+    if (!firstName || !lastName) { alert('Please enter first and last name'); return; }
     if (!studentId) { alert('Please enter a student ID'); return; }
     if (password.length < 8) { alert('Password must be at least 8 characters'); return; }
     if (password !== passwordConfirm) { alert('Passwords do not match'); return; }
 
     const studentData = {
+      first_name: firstName,
+      last_name: lastName,
       student_id: studentId,
       password: password,
       role: 'student'
@@ -2130,9 +2128,9 @@
 
   document.addEventListener('DOMContentLoaded', function() {
     checkSession();
-    setupDate();
   });
 </script>
+
 
 <div class="modal-overlay" id="profileModal">
   <div class="modal-box" style="max-width:380px;">
@@ -2141,22 +2139,50 @@
       <button class="modal-close" onclick="closeProfileModal()"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body">
-      <div class="profile-card">
+      <div style="text-align:center;padding:0.5rem 0 1rem;">
         <div class="profile-avatar-lg" id="profile-avatar-lg">A</div>
-        <div style="font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--ink);margin-bottom:0.2rem;" id="profile-name">Admin</div>
-        <div style="font-size:0.75rem;color:var(--muted);" id="profile-role">Administrator</div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--ink);margin-bottom:0.2rem;" id="profile-name"></div>
+        <div style="font-size:0.75rem;color:var(--muted);" id="profile-role"></div>
       </div>
-      <div style="margin-top:0.5rem;">
-        <div class="profile-detail-row">
-          <span class="profile-detail-label">Email</span>
-          <span class="profile-detail-value" id="profile-email">—</span>
-        </div>
-        <div class="profile-detail-row">
-          <span class="profile-detail-label">Member since</span>
-          <span class="profile-detail-value" id="profile-since">—</span>
-        </div>
-      </div>
+      <div class="profile-detail-row"><span class="profile-detail-label">Email</span><span id="profile-email">—</span></div>
+      <div class="profile-detail-row"><span class="profile-detail-label">Member since</span><span id="profile-since">—</span></div>
       <button class="btn-logout-red" onclick="logout()"><i class="fas fa-sign-out-alt" style="margin-right:0.4rem;"></i>Log Out</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="editClubModal">
+  <div class="modal-box" style="max-width:500px;">
+    <div class="modal-header">
+      <span class="modal-title">Edit Club</span>
+      <button class="modal-close" onclick="closeEditClubModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-club-id">
+      <div class="form-group"><label class="form-label">Club Name <span style="color:var(--red)">*</span></label><input class="form-control-ccc" id="edit-club-name" type="text"></div>
+      <div style="display:flex;gap:0.6rem;">
+        <div class="form-group" style="flex:1"><label class="form-label">Category <span style="color:var(--red)">*</span></label>
+          <select class="form-control-ccc" id="edit-club-category">
+            <option value="">Select</option><option value="Academic">Academic</option><option value="Sports">Sports</option>
+            <option value="Arts">Arts</option><option value="Technology">Technology</option>
+            <option value="Cultural">Cultural</option><option value="Religious">Religious</option>
+            <option value="Civic">Civic</option><option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:1"><label class="form-label">Status</label>
+          <select class="form-control-ccc" id="edit-club-status">
+            <option value="Active">Active</option><option value="Inactive">Inactive</option><option value="Pending">Pending</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Adviser</label><input class="form-control-ccc" id="edit-club-adviser" type="text"></div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-control-ccc" id="edit-club-email" type="email"></div>
+      <div class="form-group"><label class="form-label">Location</label><input class="form-control-ccc" id="edit-club-location" type="text"></div>
+      <div class="form-group"><label class="form-label">Description</label><textarea class="form-control-ccc" id="edit-club-desc" rows="3" style="resize:vertical;"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-back" onclick="closeEditClubModal()">Cancel</button>
+      <button class="btn-modal-next gold" onclick="submitEditClub()">Save Changes ✓</button>
     </div>
   </div>
 </div>
@@ -2169,40 +2195,21 @@
     </div>
     <div class="modal-body">
       <input type="hidden" id="edit-event-id">
-      <div class="form-group">
-        <label class="form-label">Event Name <span style="color:var(--red)">*</span></label>
-        <input class="form-control-ccc" id="edit-evt-name" type="text" placeholder="Event name">
-      </div>
+      <div class="form-group"><label class="form-label">Event Name <span style="color:var(--red)">*</span></label><input class="form-control-ccc" id="edit-evt-name" type="text"></div>
       <div style="display:flex;gap:0.6rem;">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Club <span style="color:var(--red)">*</span></label>
-          <input class="form-control-ccc" id="edit-evt-club" type="text" placeholder="Club name">
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Status</label>
+        <div class="form-group" style="flex:1"><label class="form-label">Club <span style="color:var(--red)">*</span></label><input class="form-control-ccc" id="edit-evt-club" type="text"></div>
+        <div class="form-group" style="flex:1"><label class="form-label">Status</label>
           <select class="form-control-ccc" id="edit-evt-status">
-            <option value="Upcoming">Upcoming</option>
-            <option value="Ongoing">Ongoing</option>
-            <option value="Completed">Completed</option>
-            <option value="Cancelled">Cancelled</option>
-            <option value="Pending">Pending</option>
+            <option value="Upcoming">Upcoming</option><option value="Ongoing">Ongoing</option>
+            <option value="Completed">Completed</option><option value="Cancelled">Cancelled</option><option value="Pending">Pending</option>
           </select>
         </div>
       </div>
       <div style="display:flex;gap:0.6rem;">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Date</label>
-          <input class="form-control-ccc" id="edit-evt-date" type="date">
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Attendees</label>
-          <input class="form-control-ccc" id="edit-evt-attendees" type="number" placeholder="0" min="0">
-        </div>
+        <div class="form-group" style="flex:1"><label class="form-label">Date</label><input class="form-control-ccc" id="edit-evt-date" type="date"></div>
+        <div class="form-group" style="flex:1"><label class="form-label">Attendees</label><input class="form-control-ccc" id="edit-evt-attendees" type="number" min="0"></div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Location</label>
-        <input class="form-control-ccc" id="edit-evt-location" type="text" placeholder="Event location">
-      </div>
+      <div class="form-group"><label class="form-label">Location</label><input class="form-control-ccc" id="edit-evt-location" type="text"></div>
     </div>
     <div class="modal-footer">
       <button class="btn-modal-back" onclick="closeEditEventModal()">Cancel</button>
@@ -2210,5 +2217,10 @@
     </div>
   </div>
 </div>
+<script>
+  document.getElementById('profileModal').addEventListener('click', function(e) { if(e.target===this) closeProfileModal(); });
+  document.getElementById('editClubModal').addEventListener('click', function(e) { if(e.target===this) closeEditClubModal(); });
+  document.getElementById('editEventModal').addEventListener('click', function(e) { if(e.target===this) closeEditEventModal(); });
+</script>
 </body>
 </html>
