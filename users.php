@@ -41,7 +41,7 @@ if ($method === 'GET' && $action === 'list') {
     echo json_encode(['success' => true, 'users' => $stmt->fetchAll()]);
 
 } elseif ($method === 'POST' && $action === 'create_student') {
-    $data = json_decode(file_get_contents('php://input'), true);
+    $data = json_decode(file_get_contents('php:
     $studentId = $data['student_id'] ?? '';
     $password  = $data['password'] ?? '';
 
@@ -64,7 +64,7 @@ if ($method === 'GET' && $action === 'list') {
     echo json_encode(['success' => true]);
 
 } elseif ($method === 'POST' && $action === 'change_role') {
-    $data = json_decode(file_get_contents('php://input'), true);
+    $data = json_decode(file_get_contents('php:
     $id   = $data['id'] ?? '';
     $role = $data['role'] ?? '';
 
