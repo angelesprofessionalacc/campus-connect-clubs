@@ -1194,7 +1194,7 @@
   const token = getSessionToken();
   console.log('[CCC] admin checkSession fired');
   console.log('[CCC] token from localStorage:', token);
-  fetch(`${API_BASE}auth.php?action=validate_session`, {
+  fetch(`${API_BASE}api/validate`, {
     credentials: 'include',
     headers: { 'X-Session-Token': token }
   })
@@ -1962,7 +1962,7 @@
   }
 
   function logout() {
-    fetch(`${API_BASE}auth.php?action=logout`, {
+    fetch(`${API_BASE}api/logout`, {
       method: 'POST',
       headers: authHeaders(),
       credentials: 'include'
