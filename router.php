@@ -2,7 +2,10 @@
 
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
+error_log('[ROUTER] uri=' . $uri . ' method=' . $_SERVER['REQUEST_METHOD']);
+
 if (preg_match('/\.php$/', $uri)) {
+    error_log('[ROUTER] passing to PHP natively: ' . $uri);
     return false;
 }
 
@@ -22,12 +25,14 @@ $resourceRoutes = [
 ];
 
 if (isset($authRoutes[$uri])) {
+    error_log('[ROUTER] auth route matched: ' . $uri . ' -> action=' . $authRoutes[$uri]);
     $_GET['action'] = $authRoutes[$uri];
     require __DIR__ . '/auth.php';
     exit;
 }
 
 if (isset($resourceRoutes[$uri])) {
+    error_log('[ROUTER] resource route matched: ' . $uri);
     require __DIR__ . '/' . $resourceRoutes[$uri];
     exit;
 }
@@ -35,6 +40,7 @@ if (isset($resourceRoutes[$uri])) {
 $filePath = __DIR__ . $uri;
 
 if ($uri !== '/' && file_exists($filePath) && !is_dir($filePath)) {
+    error_log('[ROUTER] serving static file: ' . $filePath);
     $ext = pathinfo($filePath, PATHINFO_EXTENSION);
     $mimeTypes = [
         'html' => 'text/html',
@@ -57,4 +63,5 @@ if ($uri !== '/' && file_exists($filePath) && !is_dir($filePath)) {
     exit;
 }
 
+error_log('[ROUTER] no match, serving index.html for uri=' . $uri);
 require __DIR__ . '/index.html';
