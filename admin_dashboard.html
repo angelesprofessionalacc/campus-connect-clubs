@@ -1165,23 +1165,27 @@
     })
     .then(data => {
       console.log('[CCC] validate_session response:', JSON.stringify(data));
-      if (!data.success || !data.user || data.user.role !== 'admin') {
-        sessionStorage.clear();
-        window.location.replace('index.html');
-      } else {
-        currentUser = data.user;
-        const displayName = ((data.user.first_name || '') + ' ' + (data.user.last_name || '')).trim() || data.user.email || 'Admin';
-        const initials = ((data.user.first_name || 'A')[0] + ((data.user.last_name || '')[0] || '')).toUpperCase();
-        const nameEl = document.getElementById('topbar-name-label');
-        const avatarEl = document.getElementById('topbar-avatar');
-        if (nameEl) nameEl.textContent = displayName;
-        if (avatarEl) avatarEl.textContent = initials;
-        loadAllData();
-        setupDate();
+      try {
+        if (!data.success || !data.user || data.user.role !== 'admin') {
+          sessionStorage.clear();
+          window.location.replace('index.html');
+        } else {
+          currentUser = data.user;
+          const displayName = ((data.user.first_name || '') + ' ' + (data.user.last_name || '')).trim() || data.user.email || 'Admin';
+          const initials = ((data.user.first_name || 'A')[0] + ((data.user.last_name || '')[0] || '')).toUpperCase();
+          const nameEl = document.getElementById('topbar-name-label');
+          const avatarEl = document.getElementById('topbar-avatar');
+          if (nameEl) nameEl.textContent = displayName;
+          if (avatarEl) avatarEl.textContent = initials;
+          loadAllData();
+          setupDate();
+        }
+      } catch(innerErr) {
+        console.log('[CCC] inner error in then block:', innerErr);
       }
     })
     .catch((err) => {
-      console.log('[CCC] validate_session error:', err);
+      console.log('[CCC] validate_session catch error:', err);
       window.location.replace('index.html');
     });
 }
