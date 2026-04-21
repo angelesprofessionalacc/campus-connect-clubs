@@ -68,6 +68,26 @@ if ($method === 'GET' && $action === 'list') {
     $stmt->execute([$data['id']]);
     echo json_encode(['success' => true]);
 
+} elseif ($method === 'POST' && $action === 'update') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    $clubId = null;
+    if (!empty($data['club'])) {
+        $cs = $pdo->prepare("SELECT id FROM clubs WHERE name = ? LIMIT 1");
+        $cs->execute([$data['club']]);
+        $row = $cs->fetch();
+        if ($row) $clubId = $row['id'];
+    }
+    $stmt = $pdo->prepare("UPDATE activities SET name=?, club_id=?, activity_type=?, activity_date=?, status=?, description=? WHERE id=?");
+    $stmt->execute([
+        $data['name'] ?? '',
+        $clubId,
+        $data['activity_type'] ?? 'General',
+        $data['date'] ?: null,
+        $data['status'] ?? 'Planned',
+        $data['description'] ?? '',
+        $data['id'],
+    ]);
+    echo json_encode(['success' => true]);
 } else {
     echo json_encode(['success' => false, 'error' => 'Unknown action']);
 }
