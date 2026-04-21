@@ -53,7 +53,7 @@ if ($method === 'GET' && $action === 'list') {
         $data['day'] ?? '',
         $data['time'] ?? '',
         $data['location'] ?? '',
-        $data['color'] ?? '
+        $data['color'] ?? '#3b82f6',
         $data['year'] ?? date('Y'),
     ]);
     echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
