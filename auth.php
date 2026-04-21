@@ -170,14 +170,18 @@ if ($method === 'POST') {
 } elseif ($method === 'GET') {
     if ($action === 'validate_session') {
         $sessionId = $_SERVER['HTTP_X_SESSION_TOKEN'] ?? $_COOKIE['ccc_session'] ?? '';
+        error_log('[AUTH] validate_session called, sessionId=' . substr($sessionId, 0, 10) . '...');
         $userId = validateSession($pdo, $sessionId);
+        error_log('[AUTH] userId=' . var_export($userId, true));
         if ($userId) {
             $user = getUserById($pdo, $userId);
             if ($user) {
+                error_log('[AUTH] user found, role=' . $user['role']);
                 echo json_encode(['success' => true, 'user' => $user]);
                 exit;
             }
         }
+        error_log('[AUTH] invalid session');
         echo json_encode(['success' => false, 'error' => 'Invalid session']);
         exit;
     }
