@@ -789,7 +789,7 @@
         </div>
         <div style="overflow-x:auto;">
           <table class="data-table" id="activities-table">
-            <thead><tr><th>Activity</th><th>Club</th><th>Type</th><th>Date</th><th>Status</th></tr></thead>
+            <thead><tr><th>Activity</th><th>Club</th><th>Type</th><th>Date</th><th>Status</th><th></th></tr></thead>
             <tbody id="activities-tbody">
               <tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">No activities logged yet</td></tr>
             </tbody>
@@ -804,12 +804,6 @@
 
     <div class="page-section" id="section-announcements">
 
-      <div class="row mb-4" style="row-gap:1rem;">
-        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon si-blue"><i class="fas fa-bullhorn"></i></div><div class="stat-body"><div class="stat-value" id="announcements-stat-published">0</div><div class="stat-label">Published</div></div></div></div>
-        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon si-amber"><i class="fas fa-hourglass-half"></i></div><div class="stat-body"><div class="stat-value" id="announcements-stat-pending">0</div><div class="stat-label">Pending</div></div></div></div>
-        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon si-red"><i class="fas fa-times-circle"></i></div><div class="stat-body"><div class="stat-value" id="announcements-stat-rejected">0</div><div class="stat-label">Rejected</div></div></div></div>
-        
-      </div>
 
       <div class="panel">
         <div class="panel-header">
@@ -1281,7 +1275,7 @@
         <td><span class="badge-cat bc-${club.category.toLowerCase()}">${escHtml(club.category)}</span></td>
         <td>${club.member_count || 0}</td>
         <td><span class="badge-status bs-${club.status.toLowerCase()}">${escHtml(club.status)}</span></td>
-        <td><button class="tbl-action" onclick="editClub(${club.id})"><i class="fas fa-edit"></i></button><button class="tbl-action del" onclick="deleteClub(${club.id})"><i class="fas fa-trash-alt"></i></button></td>
+        <td><button class="tbl-action" onclick="editClub(${club.id})"><i class="fas fa-edit"></i></button><button class="tbl-action del" onclick="confirmDelete('club', ${club.id}, '${escHtml(club.name)}')"><i class="fas fa-trash-alt"></i></button></td>
       </tr>
     `).join('');
 
@@ -1311,11 +1305,12 @@
       return ((a.first_name||'')+(a.last_name||'')).localeCompare((b.first_name||'')+(b.last_name||''));
     });
     const html = sorted.map(user => {
-      const actionButtons = user.role === 'admin' ?
-        '<td style="font-size:0.7rem;color:var(--muted);">System Admin</td>' :
-        user.role === 'officer' ?
-        `<td><button class="tbl-action" onclick="openRemoveOfficerModal(${user.id}, '${escHtml(user.first_name)} ${escHtml(user.last_name)}')"><i class="fas fa-arrow-down"></i> Demote</button></td>` :
-        `<td><button class="tbl-action" onclick="openMakeOfficerModal(${user.id}, '${escHtml(user.first_name)} ${escHtml(user.last_name)}')"><i class="fas fa-arrow-up"></i> Promote</button></td>`;
+      const fullName = escHtml((user.first_name||'') + ' ' + (user.last_name||'')).trim();
+      const actionButtons = user.role === 'admin'
+        ? `<td style="display:flex;gap:0.3rem;"><button class="tbl-action" onclick="viewUserDetails(${user.id})"><i class="fas fa-eye"></i></button></td>`
+        : user.role === 'officer'
+        ? `<td style="display:flex;gap:0.3rem;"><button class="tbl-action" onclick="viewUserDetails(${user.id})"><i class="fas fa-eye"></i></button><button class="tbl-action" onclick="openRemoveOfficerModal(${user.id}, '${fullName}')"><i class="fas fa-arrow-down"></i> Demote</button><button class="tbl-action del" onclick="confirmDelete('user', ${user.id}, '${fullName}')"><i class="fas fa-trash-alt"></i></button></td>`
+        : `<td style="display:flex;gap:0.3rem;"><button class="tbl-action" onclick="viewUserDetails(${user.id})"><i class="fas fa-eye"></i></button><button class="tbl-action" onclick="openMakeOfficerModal(${user.id}, '${fullName}')"><i class="fas fa-arrow-up"></i> Promote</button><button class="tbl-action del" onclick="confirmDelete('user', ${user.id}, '${fullName}')"><i class="fas fa-trash-alt"></i></button></td>`;
 
       return `
         <tr>
@@ -1347,7 +1342,7 @@
           <td>${escHtml(evt.club_name || '—')}</td>
           <td>${date}</td>
           <td><span class="badge-status bs-${evt.status.toLowerCase()}">${escHtml(evt.status)}</span></td>
-          <td><button class="tbl-action" onclick="editEvent(${evt.id})"><i class="fas fa-edit"></i></button><button class="tbl-action del" onclick="deleteEvent(${evt.id})"><i class="fas fa-trash-alt"></i></button></td>
+          <td><button class="tbl-action" onclick="editEvent(${evt.id})"><i class="fas fa-edit"></i></button><button class="tbl-action del" onclick="confirmDelete('event', ${evt.id}, '${escHtml(evt.name)}')"><i class="fas fa-trash-alt"></i></button></td>
         </tr>
       `;
     }).join('');
@@ -1372,6 +1367,7 @@
           <td><span class="badge-status" style="background:rgba(59,130,246,0.1);color:var(--blue);">${escHtml(activity.activity_type)}</span></td>
           <td>${date}</td>
           <td><span class="badge-status bs-${activity.status.toLowerCase()}">${escHtml(activity.status)}</span></td>
+          <td style="display:flex;gap:0.3rem;"><button class="tbl-action" onclick="editActivity(${activity.id})"><i class="fas fa-edit"></i></button><button class="tbl-action del" onclick="confirmDelete('activity', ${activity.id}, '${escHtml(activity.name)}')"><i class="fas fa-trash-alt"></i></button></td>
         </tr>
       `;
     }).join('');
@@ -1395,7 +1391,7 @@
           <td>${escHtml(ann.club_name || '—')}</td>
           <td><span class="badge-status bs-${ann.status.toLowerCase()}">${escHtml(ann.status)}</span></td>
           <td style="font-size:0.75rem;color:var(--muted);">${created}</td>
-          <td><button class="tbl-action" onclick="editAnnouncement(${ann.id})"><i class="fas fa-edit"></i></button><button class="tbl-action del" onclick="deleteAnnouncement(${ann.id})"><i class="fas fa-trash-alt"></i></button></td>
+          <td style="display:flex;gap:0.3rem;"><button class="tbl-action" onclick="editAnnouncement(${ann.id})"><i class="fas fa-edit"></i></button><button class="tbl-action del" onclick="confirmDelete('announcement', ${ann.id}, '${escHtml(ann.title)}')"><i class="fas fa-trash-alt"></i></button></td>
         </tr>
       `;
     }).join('');
@@ -1533,7 +1529,6 @@
   }
 
   function deleteClub(clubId) {
-    if (!confirm('Delete this club?')) return;
 
     fetch(`${API_BASE}api/clubs?action=delete`, {
       method: 'POST',
@@ -1550,7 +1545,6 @@
   }
 
   function deleteEvent(eventId) {
-    if (!confirm('Delete this event?')) return;
 
     fetch(`${API_BASE}api/events?action=delete`, {
       method: 'POST',
@@ -1583,8 +1577,105 @@
     alert('Edit functionality coming soon');
   }
 
-  function editAnnouncement(announcementId) {
-    alert('Edit functionality coming soon');
+  function confirmDelete(type, id, label) {
+    document.getElementById('confirm-delete-msg').textContent = 'Are you sure you want to delete "' + label + '"? This cannot be undone.';
+    document.getElementById('confirm-delete-btn').onclick = function() {
+      closeConfirmDeleteModal();
+      if (type === 'club') deleteClub(id);
+      else if (type === 'event') deleteEvent(id);
+      else if (type === 'user') deleteUser(id, label);
+      else if (type === 'activity') deleteActivity(id);
+      else if (type === 'announcement') deleteAnnouncementById(id);
+    };
+    document.getElementById('confirmDeleteModal').classList.add('open');
+  }
+
+  function closeConfirmDeleteModal() {
+    document.getElementById('confirmDeleteModal').classList.remove('open');
+  }
+
+  function deleteActivity(id) {
+    fetch(`${API_BASE}api/activities?action=delete`, {
+      method: 'POST', headers: authHeaders(), credentials: 'include',
+      body: JSON.stringify({ id: id })
+    }).then(r => r.json()).then(data => { if (data.success) loadActivities(); });
+  }
+
+  function deleteAnnouncementById(id) {
+    fetch(`${API_BASE}api/announcements?action=delete`, {
+      method: 'POST', headers: authHeaders(), credentials: 'include',
+      body: JSON.stringify({ id: id })
+    }).then(r => r.json()).then(data => { if (data.success) loadAnnouncements(); });
+  }
+
+  function editActivity(activityId) {
+    const act = allActivities.find(a => a.id === activityId);
+    if (!act) return;
+    document.getElementById('edit-act-id').value = act.id;
+    document.getElementById('edit-act-name').value = act.name || '';
+    document.getElementById('edit-act-club').value = act.club_name || '';
+    document.getElementById('edit-act-type').value = act.activity_type || 'General';
+    document.getElementById('edit-act-date').value = act.activity_date ? act.activity_date.split('T')[0] : '';
+    document.getElementById('edit-act-status').value = act.status || 'Planned';
+    document.getElementById('edit-act-desc').value = act.description || '';
+    document.getElementById('editActivityModal').classList.add('open');
+  }
+
+  function closeEditActivityModal() {
+    document.getElementById('editActivityModal').classList.remove('open');
+  }
+
+  function submitEditActivity() {
+    const id = document.getElementById('edit-act-id').value;
+    const name = document.getElementById('edit-act-name').value.trim();
+    if (!name) { alert('Activity name is required'); return; }
+    fetch(`${API_BASE}api/activities?action=update`, {
+      method: 'POST', headers: authHeaders(), credentials: 'include',
+      body: JSON.stringify({
+        id, name,
+        club: document.getElementById('edit-act-club').value.trim(),
+        activity_type: document.getElementById('edit-act-type').value,
+        date: document.getElementById('edit-act-date').value,
+        status: document.getElementById('edit-act-status').value,
+        description: document.getElementById('edit-act-desc').value.trim(),
+      })
+    }).then(r => r.json()).then(data => {
+      if (data.success) { closeEditActivityModal(); loadActivities(); }
+      else alert(data.error || 'Failed to update activity');
+    });
+  }
+
+  function editAnnouncement(annId) {
+    const ann = allAnnouncements.find(a => a.id === annId);
+    if (!ann) return;
+    document.getElementById('edit-ann-id').value = ann.id;
+    document.getElementById('edit-ann-title').value = ann.title || '';
+    document.getElementById('edit-ann-club').value = ann.club_name || '';
+    document.getElementById('edit-ann-status').value = ann.status || 'Published';
+    document.getElementById('edit-ann-body').value = ann.body || '';
+    document.getElementById('editAnnouncementModal').classList.add('open');
+  }
+
+  function closeEditAnnouncementModal() {
+    document.getElementById('editAnnouncementModal').classList.remove('open');
+  }
+
+  function submitEditAnnouncement() {
+    const id = document.getElementById('edit-ann-id').value;
+    const title = document.getElementById('edit-ann-title').value.trim();
+    if (!title) { alert('Title is required'); return; }
+    fetch(`${API_BASE}api/announcements?action=update`, {
+      method: 'POST', headers: authHeaders(), credentials: 'include',
+      body: JSON.stringify({
+        id, title,
+        club: document.getElementById('edit-ann-club').value.trim(),
+        status: document.getElementById('edit-ann-status').value,
+        body: document.getElementById('edit-ann-body').value.trim(),
+      })
+    }).then(r => r.json()).then(data => {
+      if (data.success) { closeEditAnnouncementModal(); loadAnnouncements(); }
+      else alert(data.error || 'Failed to update announcement');
+    });
   }
 
   function showSection(name, el) {
@@ -2348,6 +2439,9 @@
   </div>
 </div>
 <script>
+  document.getElementById('confirmDeleteModal').addEventListener('click', function(e) { if(e.target===this) closeConfirmDeleteModal(); });
+  document.getElementById('editActivityModal').addEventListener('click', function(e) { if(e.target===this) closeEditActivityModal(); });
+  document.getElementById('editAnnouncementModal').addEventListener('click', function(e) { if(e.target===this) closeEditAnnouncementModal(); });
   document.getElementById('userDetailModal').addEventListener('click', function(e) { if(e.target===this) closeUserDetailModal(); });
   document.getElementById('addActivityModal').addEventListener('click', function(e) { if(e.target===this) closeAddActivityModal(); });
   document.getElementById('addAnnouncementModal').addEventListener('click', function(e) { if(e.target===this) closeAddAnnouncementModal(); });
@@ -2445,6 +2539,85 @@
     <div class="modal-footer">
       <button class="btn-modal-back" onclick="closeAddAnnouncementModal()">Cancel</button>
       <button class="btn-modal-next gold" onclick="submitAddAnnouncement()">Post Announcement ✓</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="confirmDeleteModal">
+  <div class="modal-box" style="max-width:400px;">
+    <div class="modal-header">
+      <span class="modal-title">Confirm Delete</span>
+      <button class="modal-close" onclick="closeConfirmDeleteModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.88rem;color:var(--ink);line-height:1.6;" id="confirm-delete-msg"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-back" onclick="closeConfirmDeleteModal()">Cancel</button>
+      <button class="btn-modal-next" style="background:var(--red);color:white;" id="confirm-delete-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="editActivityModal">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-header">
+      <span class="modal-title">Edit Activity</span>
+      <button class="modal-close" onclick="closeEditActivityModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-act-id">
+      <div class="form-group"><label class="form-label">Activity Name <span style="color:var(--red)">*</span></label><input class="form-control-ccc" id="edit-act-name" type="text"></div>
+      <div style="display:flex;gap:0.6rem;">
+        <div class="form-group" style="flex:1"><label class="form-label">Club (optional)</label><input class="form-control-ccc" id="edit-act-club" type="text" placeholder="Leave blank for general"></div>
+        <div class="form-group" style="flex:1"><label class="form-label">Type</label>
+          <select class="form-control-ccc" id="edit-act-type">
+            <option value="General">General</option><option value="Meeting">Meeting</option>
+            <option value="Event">Event</option><option value="Training">Training</option>
+            <option value="Competition">Competition</option><option value="Community Service">Community Service</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.6rem;">
+        <div class="form-group" style="flex:1"><label class="form-label">Date</label><input class="form-control-ccc" id="edit-act-date" type="date"></div>
+        <div class="form-group" style="flex:1"><label class="form-label">Status</label>
+          <select class="form-control-ccc" id="edit-act-status">
+            <option value="Planned">Planned</option><option value="Ongoing">Ongoing</option><option value="Completed">Completed</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Description</label><textarea class="form-control-ccc" id="edit-act-desc" rows="3" style="resize:vertical;"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-back" onclick="closeEditActivityModal()">Cancel</button>
+      <button class="btn-modal-next gold" onclick="submitEditActivity()">Save Changes ✓</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="editAnnouncementModal">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-header">
+      <span class="modal-title">Edit Announcement</span>
+      <button class="modal-close" onclick="closeEditAnnouncementModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-ann-id">
+      <div class="form-group"><label class="form-label">Title <span style="color:var(--red)">*</span></label><input class="form-control-ccc" id="edit-ann-title" type="text"></div>
+      <div style="display:flex;gap:0.6rem;">
+        <div class="form-group" style="flex:1"><label class="form-label">Club (optional)</label><input class="form-control-ccc" id="edit-ann-club" type="text" placeholder="Leave blank for general"></div>
+        <div class="form-group" style="flex:1"><label class="form-label">Status</label>
+          <select class="form-control-ccc" id="edit-ann-status">
+            <option value="Published">Published</option><option value="Pending">Pending</option><option value="Rejected">Rejected</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Message</label><textarea class="form-control-ccc" id="edit-ann-body" rows="4" style="resize:vertical;"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-back" onclick="closeEditAnnouncementModal()">Cancel</button>
+      <button class="btn-modal-next gold" onclick="submitEditAnnouncement()">Save Changes ✓</button>
     </div>
   </div>
 </div>
