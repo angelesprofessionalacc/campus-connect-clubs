@@ -618,7 +618,7 @@
             <div class="stat-icon si-gold"><i class="fas fa-id-card"></i></div>
             <div class="stat-body">
               <div class="stat-value" id="dash-stat-members">0</div>
-              <div class="stat-label">Total Members</div>
+              <div class="stat-label">Total Users</div>
             </div>
           </div>
         </div>
@@ -784,6 +784,7 @@
           <span class="panel-title">Activity Log</span>
           <div class="filter-bar">
             <input class="search-input" type="text" placeholder="Search activities…" id="activities-search" oninput="filterActivitiesTable()">
+            <button class="btn-sm primary" onclick="openAddActivityModal()">+ Add Activity</button>
           </div>
         </div>
         <div style="overflow-x:auto;">
@@ -816,6 +817,7 @@
           <div class="filter-bar">
             <input class="search-input" type="text" placeholder="Search announcements…" id="announcements-search" oninput="filterAnnouncementsTable()">
             <select class="filter-select" id="announcements-status-filter" onchange="filterAnnouncementsTable()"><option value="">All Status</option><option value="Published">Published</option><option value="Pending">Pending</option><option value="Rejected">Rejected</option></select>
+            <button class="btn-sm primary" onclick="openAddAnnouncementModal()">+ Add Announcement</button>
           </div>
         </div>
         <div style="overflow-x:auto;">
@@ -1238,15 +1240,29 @@
   }
 
   function loadActivities() {
-    allActivities = [];
-    renderActivities(allActivities);
-    updateActivityStats(allActivities);
+    fetch(`${API_BASE}api/activities?action=list`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && data.activities) {
+          allActivities = data.activities;
+          renderActivities(allActivities);
+          updateActivityStats(allActivities);
+        }
+      })
+      .catch(() => {});
   }
 
   function loadAnnouncements() {
-    allAnnouncements = [];
-    renderAnnouncements(allAnnouncements);
-    updateAnnouncementStats(allAnnouncements);
+    fetch(`${API_BASE}api/announcements?action=list`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && data.announcements) {
+          allAnnouncements = data.announcements;
+          renderAnnouncements(allAnnouncements);
+          updateAnnouncementStats(allAnnouncements);
+        }
+      })
+      .catch(() => {});
   }
 
   function renderClubs(clubs) {
@@ -1974,6 +1990,100 @@
     });
   }
 
+  function viewUserDetails(userId) {
+    const user = allUsers.find(u => u.id === userId);
+    if (!user) return;
+    const name = ((user.first_name||'') + ' ' + (user.last_name||'')).trim() || '—';
+    const initials = ((user.first_name||'?')[0] + (user.last_name||'?')[0]).toUpperCase();
+    document.getElementById('ud-avatar').textContent = initials;
+    document.getElementById('ud-name').textContent = name;
+    document.getElementById('ud-role').textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+    document.getElementById('ud-email').textContent = user.email || '—';
+    document.getElementById('ud-studentid').textContent = user.student_id || '—';
+    document.getElementById('ud-since').textContent = user.created_at ? new Date(user.created_at).toLocaleDateString() : '—';
+
+    const memberOf = allClubs.filter(c => c.members && c.members.some(m => m.user_id === userId));
+    const leadsOf = allClubs.filter(c => c.leader_id === userId);
+    document.getElementById('ud-clubs').textContent = memberOf.length ? memberOf.map(c => c.name).join(', ') : '—';
+    document.getElementById('ud-leads').textContent = leadsOf.length ? leadsOf.map(c => c.name).join(', ') : '—';
+
+    document.getElementById('userDetailModal').classList.add('open');
+  }
+
+  function closeUserDetailModal() {
+    document.getElementById('userDetailModal').classList.remove('open');
+  }
+
+  function openAddActivityModal() {
+    document.getElementById('addActivityModal').classList.add('open');
+    document.getElementById('act-name').value = '';
+    document.getElementById('act-club').value = '';
+    document.getElementById('act-type').value = 'General';
+    document.getElementById('act-date').value = '';
+    document.getElementById('act-status').value = 'Planned';
+    document.getElementById('act-desc').value = '';
+  }
+
+  function closeAddActivityModal() {
+    document.getElementById('addActivityModal').classList.remove('open');
+  }
+
+  function submitAddActivity() {
+    const name = document.getElementById('act-name').value.trim();
+    if (!name) { alert('Activity name is required'); return; }
+    fetch(`${API_BASE}api/activities?action=create`, {
+      method: 'POST',
+      headers: authHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({
+        name: name,
+        club: document.getElementById('act-club').value.trim(),
+        activity_type: document.getElementById('act-type').value,
+        date: document.getElementById('act-date').value,
+        status: document.getElementById('act-status').value,
+        description: document.getElementById('act-desc').value.trim(),
+      })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) { closeAddActivityModal(); loadActivities(); }
+        else alert(data.error || 'Failed to create activity');
+      });
+  }
+
+  function openAddAnnouncementModal() {
+    document.getElementById('addAnnouncementModal').classList.add('open');
+    document.getElementById('ann-title').value = '';
+    document.getElementById('ann-club').value = '';
+    document.getElementById('ann-status').value = 'Published';
+    document.getElementById('ann-body').value = '';
+  }
+
+  function closeAddAnnouncementModal() {
+    document.getElementById('addAnnouncementModal').classList.remove('open');
+  }
+
+  function submitAddAnnouncement() {
+    const title = document.getElementById('ann-title').value.trim();
+    if (!title) { alert('Title is required'); return; }
+    fetch(`${API_BASE}api/announcements?action=create`, {
+      method: 'POST',
+      headers: authHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({
+        title: title,
+        club: document.getElementById('ann-club').value.trim(),
+        status: document.getElementById('ann-status').value,
+        body: document.getElementById('ann-body').value.trim(),
+      })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) { closeAddAnnouncementModal(); loadAnnouncements(); }
+        else alert(data.error || 'Failed to create announcement');
+      });
+  }
+
   function logout() {
     fetch(`${API_BASE}api/logout`, {
       method: 'POST',
@@ -2238,9 +2348,105 @@
   </div>
 </div>
 <script>
+  document.getElementById('userDetailModal').addEventListener('click', function(e) { if(e.target===this) closeUserDetailModal(); });
+  document.getElementById('addActivityModal').addEventListener('click', function(e) { if(e.target===this) closeAddActivityModal(); });
+  document.getElementById('addAnnouncementModal').addEventListener('click', function(e) { if(e.target===this) closeAddAnnouncementModal(); });
   document.getElementById('profileModal').addEventListener('click', function(e) { if(e.target===this) closeProfileModal(); });
   document.getElementById('editClubModal').addEventListener('click', function(e) { if(e.target===this) closeEditClubModal(); });
   document.getElementById('editEventModal').addEventListener('click', function(e) { if(e.target===this) closeEditEventModal(); });
 </script>
+
+<div class="modal-overlay" id="userDetailModal">
+  <div class="modal-box" style="max-width:460px;">
+    <div class="modal-header">
+      <span class="modal-title">User Details</span>
+      <button class="modal-close" onclick="closeUserDetailModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;">
+        <div id="ud-avatar" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--navy-light),var(--navy));color:white;font-size:1.1rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">?</div>
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--ink);" id="ud-name">—</div>
+          <div style="font-size:0.75rem;color:var(--muted);" id="ud-role">—</div>
+        </div>
+      </div>
+      <div class="profile-detail-row"><span class="profile-detail-label">Email</span><span id="ud-email">—</span></div>
+      <div class="profile-detail-row"><span class="profile-detail-label">Student ID</span><span id="ud-studentid">—</span></div>
+      <div class="profile-detail-row"><span class="profile-detail-label">Member Since</span><span id="ud-since">—</span></div>
+      <div class="profile-detail-row"><span class="profile-detail-label">Clubs</span><span id="ud-clubs" style="text-align:right;max-width:60%;">—</span></div>
+      <div class="profile-detail-row"><span class="profile-detail-label">Leads</span><span id="ud-leads" style="text-align:right;max-width:60%;">—</span></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-next" onclick="closeUserDetailModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addActivityModal">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-header">
+      <span class="modal-title">Log Activity</span>
+      <button class="modal-close" onclick="closeAddActivityModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Activity Name <span style="color:var(--red)">*</span></label><input class="form-control-ccc" id="act-name" type="text" placeholder="Activity name"></div>
+      <div style="display:flex;gap:0.6rem;">
+        <div class="form-group" style="flex:1"><label class="form-label">Club (optional)</label><input class="form-control-ccc" id="act-club" type="text" placeholder="Leave blank for general"></div>
+        <div class="form-group" style="flex:1"><label class="form-label">Type</label>
+          <select class="form-control-ccc" id="act-type">
+            <option value="General">General</option>
+            <option value="Meeting">Meeting</option>
+            <option value="Event">Event</option>
+            <option value="Training">Training</option>
+            <option value="Competition">Competition</option>
+            <option value="Community Service">Community Service</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.6rem;">
+        <div class="form-group" style="flex:1"><label class="form-label">Date</label><input class="form-control-ccc" id="act-date" type="date"></div>
+        <div class="form-group" style="flex:1"><label class="form-label">Status</label>
+          <select class="form-control-ccc" id="act-status">
+            <option value="Planned">Planned</option>
+            <option value="Ongoing">Ongoing</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Description</label><textarea class="form-control-ccc" id="act-desc" rows="3" style="resize:vertical;"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-back" onclick="closeAddActivityModal()">Cancel</button>
+      <button class="btn-modal-next gold" onclick="submitAddActivity()">Log Activity ✓</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addAnnouncementModal">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-header">
+      <span class="modal-title">New Announcement</span>
+      <button class="modal-close" onclick="closeAddAnnouncementModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Title <span style="color:var(--red)">*</span></label><input class="form-control-ccc" id="ann-title" type="text" placeholder="Announcement title"></div>
+      <div style="display:flex;gap:0.6rem;">
+        <div class="form-group" style="flex:1"><label class="form-label">Club (optional)</label><input class="form-control-ccc" id="ann-club" type="text" placeholder="Leave blank for general"></div>
+        <div class="form-group" style="flex:1"><label class="form-label">Status</label>
+          <select class="form-control-ccc" id="ann-status">
+            <option value="Published">Published</option>
+            <option value="Pending">Pending</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Message</label><textarea class="form-control-ccc" id="ann-body" rows="4" style="resize:vertical;" placeholder="Write your announcement here…"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-back" onclick="closeAddAnnouncementModal()">Cancel</button>
+      <button class="btn-modal-next gold" onclick="submitAddAnnouncement()">Post Announcement ✓</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
