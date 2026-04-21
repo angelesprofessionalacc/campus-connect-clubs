@@ -1697,31 +1697,41 @@
     foundEl.style.display = 'none';
     notFoundEl.style.display = 'none';
 
-    if (!idVal) { 
+    if (!idVal) {
       alert('Please enter student ID');
-      return; 
+      return;
     }
 
     const btn = document.getElementById('btn-lookup');
-    btn.textContent = '…'; 
+    btn.textContent = '…';
     btn.disabled = true;
-    
-    setTimeout(() => {
-      btn.textContent = 'Look Up'; 
-      btn.disabled = false;
-      
-      const student = fakeStudents[idVal];
-      if (student) {
-        confirmedLeader = student;
-        document.getElementById('student-avatar-initials').textContent = student.initials;
-        document.getElementById('student-result-name').textContent = student.name;
-        document.getElementById('student-result-meta').textContent = student.course + ' · ID: ' + idVal;
-        foundEl.style.display = 'flex';
-      } else {
+
+    fetch(`${API_BASE}api/users?action=lookup&student_id=` + encodeURIComponent(idVal), {
+      credentials: 'include',
+      headers: { 'X-Session-Token': getSessionToken() }
+    })
+      .then(r => r.json())
+      .then(data => {
+        btn.textContent = 'Look Up';
+        btn.disabled = false;
+        if (data.success && data.user) {
+          confirmedLeader = data.user;
+          const initials = ((data.user.first_name||'?')[0] + (data.user.last_name||'?')[0]).toUpperCase();
+          document.getElementById('student-avatar-initials').textContent = initials;
+          document.getElementById('student-result-name').textContent = (data.user.first_name||'') + ' ' + (data.user.last_name||'');
+          document.getElementById('student-result-meta').textContent = 'ID: ' + idVal;
+          foundEl.style.display = 'flex';
+        } else {
+          confirmedLeader = null;
+          notFoundEl.style.display = 'block';
+        }
+      })
+      .catch(() => {
+        btn.textContent = 'Look Up';
+        btn.disabled = false;
         confirmedLeader = null;
         notFoundEl.style.display = 'block';
-      }
-    }, 600);
+      });
   }
 
   function skipLeader() {
@@ -1764,6 +1774,10 @@
     })
       .then(r => r.json())
       .then(data => {
+        if (!data.success) {
+          alert(data.error || 'Failed to create club');
+          return;
+        }
         if (data.success) {
           document.getElementById('modal-step-' + currentStep).classList.remove('active');
           currentStep = totalSteps + 1;
