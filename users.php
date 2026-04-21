@@ -91,6 +91,21 @@ if ($method === 'GET' && $action === 'list') {
     $stmt->execute([$id]);
     echo json_encode(['success' => true]);
 
+} elseif ($method === 'GET' && $action === 'lookup') {
+    $studentId = $_GET['student_id'] ?? '';
+    if (empty($studentId)) {
+        echo json_encode(['success' => false, 'error' => 'Missing student_id']);
+        exit;
+    }
+    $stmt = $pdo->prepare("SELECT id, first_name, last_name, student_id, role FROM users WHERE student_id = ? LIMIT 1");
+    $stmt->execute([$studentId]);
+    $user = $stmt->fetch();
+    if ($user) {
+        echo json_encode(['success' => true, 'user' => $user]);
+    } else {
+        echo json_encode(['success' => false, 'error' => 'Student not found']);
+    }
+
 } else {
     echo json_encode(['success' => false, 'error' => 'Unknown action']);
 }
