@@ -1172,8 +1172,10 @@
         currentUser = data.user;
         const displayName = ((data.user.first_name || '') + ' ' + (data.user.last_name || '')).trim() || data.user.email || 'Admin';
         const initials = ((data.user.first_name || 'A')[0] + ((data.user.last_name || '')[0] || '')).toUpperCase();
-        document.getElementById('topbar-name-label').textContent = displayName;
-        document.getElementById('topbar-avatar').textContent = initials;
+        const nameEl = document.getElementById('topbar-name-label');
+        const avatarEl = document.getElementById('topbar-avatar');
+        if (nameEl) nameEl.textContent = displayName;
+        if (avatarEl) avatarEl.textContent = initials;
         loadAllData();
         setupDate();
       }
