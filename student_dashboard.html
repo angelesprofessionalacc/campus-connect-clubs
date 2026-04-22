@@ -1059,21 +1059,30 @@
     })
       .then(r => r.json())
       .then(data => {
-        if (!data.success || !data.user || (data.user.role !== 'student' && data.user.role !== 'officer')) {
-          sessionStorage.clear();
-          window.location.replace('index.html');
-        } else {
-          currentUser = data.user;
-          const uid = data.user.student_id || '—';
-          const name = data.user.first_name || 'Student';
-          document.getElementById('sidebar-uid').textContent = uid;
-          const sDisplayName = ((data.user.first_name||'')+ ' '+(data.user.last_name||'')).trim() || uid;
-          document.getElementById('topbar-user').textContent = sDisplayName;
-          document.getElementById('topbar-avatar-s').textContent = (data.user.first_name||uid||'S')[0].toUpperCase();
-          document.getElementById('greet-name').textContent = name;
+        try {
+          if (!data.success || !data.user || (data.user.role !== 'student' && data.user.role !== 'officer')) {
+            sessionStorage.clear();
+            window.location.replace('index.html');
+          } else {
+            currentUser = data.user;
+            const uid = data.user.student_id || '—';
+            const name = data.user.first_name || 'Student';
+            const sDisplayName = ((data.user.first_name||'')+ ' '+(data.user.last_name||'')).trim() || uid;
+            const sidebarUid = document.getElementById('sidebar-uid');
+            const topbarUser = document.getElementById('topbar-user');
+            const topbarAvatar = document.getElementById('topbar-avatar-s');
+            const greetName = document.getElementById('greet-name');
+            if (sidebarUid) sidebarUid.textContent = uid;
+            if (topbarUser) topbarUser.textContent = sDisplayName;
+            if (topbarAvatar) topbarAvatar.textContent = (data.user.first_name||uid||'S')[0].toUpperCase();
+            if (greetName) greetName.textContent = name;
+          }
+        } catch(innerErr) {
+          console.log('[CCC] student inner error:', innerErr);
         }
       })
-      .catch(() => {
+      .catch((err) => {
+        console.log('[CCC] student catch error:', err);
         window.location.replace('index.html');
       });
   }
