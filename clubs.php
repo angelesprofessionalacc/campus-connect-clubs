@@ -31,7 +31,13 @@ $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';
 
 $user = getSessionUser($pdo);
-if (!$user || $user['role'] !== 'admin') {
+if (!$user) {
+    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+    exit;
+}
+$isAdmin = $user['role'] === 'admin';
+
+if (!$isAdmin && $method !== 'GET') {
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
     exit;
 }
