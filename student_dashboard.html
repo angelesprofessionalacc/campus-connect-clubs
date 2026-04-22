@@ -803,24 +803,24 @@
 
       <div class="stat-cards">
         <div class="stat-card">
-          <div class="stat-label">Clubs Joined</div>
-          <div class="stat-value">0</div>
-          <div class="stat-sub">Active memberships</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Pending Applications</div>
-          <div class="stat-value">0</div>
-          <div class="stat-sub">Awaiting review</div>
+          <div class="stat-label">Total Clubs</div>
+          <div class="stat-value" id="dash-stat-clubs">0</div>
+          <div class="stat-sub">Registered on campus</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Upcoming Events</div>
-          <div class="stat-value">0</div>
-          <div class="stat-sub">This month</div>
+          <div class="stat-value" id="dash-stat-events">0</div>
+          <div class="stat-sub">Across all clubs</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">New Announcements</div>
+          <div class="stat-label">Announcements</div>
           <div class="stat-value" id="dash-stat-announcements">0</div>
-          <div class="stat-sub">Unread</div>
+          <div class="stat-sub">Published updates</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Activities</div>
+          <div class="stat-value" id="dash-stat-activities">0</div>
+          <div class="stat-sub">Logged this term</div>
         </div>
       </div>
 
@@ -1076,6 +1076,7 @@
             if (topbarUser) topbarUser.textContent = sDisplayName;
             if (topbarAvatar) topbarAvatar.textContent = (data.user.first_name||uid||'S')[0].toUpperCase();
             if (greetName) greetName.textContent = name;
+            loadAllData();
           }
         } catch(innerErr) {
           console.log('[CCC] student inner error:', innerErr);
@@ -1136,9 +1137,102 @@
       });
   }
 
-  const clubs = [];
+  let clubs = [];
   const sessionApplied = new Set();
   let selectedClubForApplication = null;
+
+  function loadAllData() {
+    loadClubs();
+    loadEvents();
+    loadAnnouncements();
+    loadActivities();
+  }
+
+  function loadClubs() {
+    fetch(`${API_BASE}api/clubs?action=list`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && data.clubs) {
+          clubs.length = 0;
+          data.clubs.forEach(c => clubs.push({
+            name: c.name,
+            category: c.category || 'General',
+            desc: c.description || '',
+            color: c.color || '#3b82f6',
+            status: c.status,
+            applied: false,
+            pending: false,
+          }));
+          renderClubs(clubs);
+          document.getElementById('dash-stat-clubs') && (document.getElementById('dash-stat-clubs').textContent = clubs.length);
+        }
+      })
+      .catch(() => {});
+  }
+
+  function loadEvents() {
+    fetch(`${API_BASE}api/events?action=list`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && data.events) {
+          events.length = 0;
+          data.events.forEach(e => events.push({
+            name: e.name,
+            club: e.club_name || '—',
+            datetime: e.event_date ? new Date(e.event_date).toLocaleDateString() : '—',
+            location: e.location || '—',
+            status: e.status || 'Upcoming',
+          }));
+          renderEvents();
+          const evtEl = document.getElementById('dash-stat-events');
+          if (evtEl) evtEl.textContent = events.filter(e => e.status === 'Upcoming').length;
+        }
+      })
+      .catch(() => {});
+  }
+
+  function loadAnnouncements() {
+    fetch(`${API_BASE}api/announcements?action=list`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && data.announcements) {
+          announcements.length = 0;
+          data.announcements
+            .filter(a => a.status === 'Published')
+            .forEach(a => announcements.push({
+              title: a.title,
+              club: a.club_name || 'General',
+              body: a.body || '',
+              date: a.created_at ? new Date(a.created_at).toLocaleDateString() : '—',
+            }));
+          renderAnnouncements();
+          const annEl = document.getElementById('dash-stat-announcements');
+          if (annEl) annEl.textContent = announcements.length;
+        }
+      })
+      .catch(() => {});
+  }
+
+  function loadActivities() {
+    fetch(`${API_BASE}api/activities?action=list`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && data.activities) {
+          activityRecords.length = 0;
+          data.activities.forEach(a => activityRecords.push({
+            title: a.name,
+            club: a.club_name || 'General',
+            type: a.activity_type || 'General',
+            date: a.activity_date ? new Date(a.activity_date).toLocaleDateString() : '—',
+            status: a.status === 'Completed' ? 'completed' : 'ongoing',
+          }));
+          renderActivityRecords();
+          const actEl = document.getElementById('dash-stat-activities');
+          if (actEl) actEl.textContent = activityRecords.length;
+        }
+      })
+      .catch(() => {});
+  }
 
   function renderClubs(list) {
     const grid = document.getElementById('club-grid');
@@ -1183,7 +1277,6 @@
     ));
   }
 
-  renderClubs(clubs);
 
   function openApplicationModal(clubName) {
     selectedClubForApplication = clubName;
@@ -1238,7 +1331,7 @@
     if (e.target === this) closeApplicationModal();
   });
 
-  const memberships = [];
+  let memberships = [];
 
   function renderMemberships() {
     const container = document.getElementById('memberships-list');
@@ -1276,9 +1369,8 @@
     }).join('');
   }
 
-  renderMemberships();
 
-  const events = [];
+  let events = [];
 
   const evtStatusConfig = {
     'Upcoming':  { cls: 'pill-upcoming', label: 'Upcoming'  },
@@ -1388,9 +1480,8 @@
     if (elTot  && +elTot.textContent  !== total)     { animate(elTot);  elTot.textContent  = total;     }
   }
 
-  renderEvents();
 
-  const announcements = [];
+  let announcements = [];
 
   function renderAnnouncements() {
     const container    = document.getElementById('announcements-list');
@@ -1444,9 +1535,8 @@
     if (statEl) statEl.textContent = announcements.length;
   }
 
-  renderAnnouncements();
 
-  const activityRecords = [];
+  let activityRecords = [];
 
   const actRecordConfig = {
     ongoing:   { dotCls: 'ongoing',   cls: 'pill-upcoming', label: 'Ongoing'   },
@@ -1479,7 +1569,6 @@
     }).join('');
   }
 
-  renderActivityRecords();
 
 </script>
 
