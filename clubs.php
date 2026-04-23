@@ -46,6 +46,15 @@ if ($method === 'GET' && $action === 'list') {
     $stmt = $pdo->query("SELECT c.*, COUNT(m.id) as member_count FROM clubs c LEFT JOIN club_members m ON c.id = m.club_id GROUP BY c.id ORDER BY c.name ASC");
     echo json_encode(['success' => true, 'clubs' => $stmt->fetchAll()]);
 
+} elseif ($method === 'GET' && $action === 'list_my_clubs') {
+    if ($user['role'] !== 'officer' && $user['role'] !== 'admin') {
+        echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+        exit;
+    }
+    $stmt = $pdo->prepare("SELECT c.*, COUNT(m.id) as member_count FROM clubs c LEFT JOIN club_members m ON c.id = m.club_id WHERE c.officer_id = ? GROUP BY c.id ORDER BY c.name ASC");
+    $stmt->execute([$user['id']]);
+    echo json_encode(['success' => true, 'clubs' => $stmt->fetchAll()]);
+
 } elseif ($method === 'POST' && $action === 'create') {
     $data = json_decode(file_get_contents('php://input'), true);
     $stmt = $pdo->prepare("INSERT INTO clubs (name, category, status, adviser, email, description, day, time, location, color, year, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
