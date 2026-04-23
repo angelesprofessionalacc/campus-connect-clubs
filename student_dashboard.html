@@ -109,9 +109,93 @@
       text-overflow: ellipsis;
     }
 
+    .logo-icon {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(200,168,75,0.15);
+      color: var(--gold);
+      font-weight: 700;
+      font-size: 0.75rem;
+      border: 1.5px solid rgba(200,168,75,0.35);
+      box-shadow: 0 2px 10px rgba(200,168,75,0.40);
+    }
+
+    .admin-badge {
+      margin: 0.85rem 1.25rem 0;
+      background: rgba(200,168,75,0.12);
+      border: 1px solid rgba(200,168,75,0.25);
+      border-radius: 6px;
+      padding: 0.45rem 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .sidebar-footer {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .sidebar-footer a {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.45);
+      cursor: pointer;
+      padding: 0.4rem 0;
+      transition: color 0.15s;
+      text-decoration: none;
+    }
+
+    .sidebar-footer a:hover { color: var(--red) !important; }
+
     .sidebar-nav {
       flex: 1;
       padding: 0.75rem 0;
+    }
+
+    .sidebar-nav a {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.6rem 1.25rem;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.6);
+      cursor: pointer;
+      border-left: 2.5px solid transparent;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+
+    .sidebar-nav a i { width: 16px; text-align: center; font-size: 0.82rem; }
+
+    .sidebar-nav a:hover {
+      color: var(--white);
+      background: rgba(255,255,255,0.05);
+      border-left-color: rgba(200,168,75,0.4);
+    }
+
+    .sidebar-nav a.active {
+      color: var(--white);
+      background: rgba(200,168,75,0.1);
+      border-left-color: var(--gold);
+    }
+
+    .sidebar-nav a.active i { opacity: 1; }
+
+    .nav-section-label {
+      font-size: 0.58rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+      padding: 0.75rem 1.25rem 0.3rem;
+      font-weight: 500;
     }
 
     .nav-section-label {
@@ -1082,11 +1166,12 @@
             const topbarUser = document.getElementById('topbar-user');
             const topbarAvatar = document.getElementById('topbar-avatar-s');
             const greetName = document.getElementById('greet-name');
-            if (sidebarUid) sidebarUid.textContent = uid;
+            if (sidebarUid) sidebarUid.textContent = sDisplayName || uid;
             if (topbarUser) topbarUser.textContent = sDisplayName;
             if (topbarAvatar) topbarAvatar.textContent = (data.user.first_name||uid||'S')[0].toUpperCase();
             if (greetName) greetName.textContent = name;
             loadAllData();
+            setupDate();
           }
         } catch(innerErr) {
           console.log('[CCC] student inner error:', innerErr);
@@ -1103,7 +1188,7 @@
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + id).classList.add('active');
 
-    document.querySelectorAll('.nav-link-item').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.sidebar-nav a').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
 
     const titles = {
@@ -1111,7 +1196,8 @@
       memberships: 'My Memberships', events: 'Event Schedule',
       announcements: 'Announcements', records: 'Activity Records'
     };
-    document.getElementById('topbar-title').textContent = titles[id] || 'Dashboard';
+    const titleEl = document.getElementById('topbar-title');
+    if (titleEl) titleEl.textContent = titles[id] || 'Dashboard';
   }
 
   function openProfileModal() {
@@ -1127,6 +1213,14 @@
 
   function closeProfileModal() {
     document.getElementById('studentProfileModal').classList.remove('open');
+  }
+
+  function setupDate() {
+    const today = new Date();
+    const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][today.getDay()];
+    const monthName = ['January','February','March','April','May','June','July','August','September','October','November','December'][today.getMonth()];
+    const el = document.getElementById('date-display');
+    if (el) el.textContent = dayName + ', ' + monthName + ' ' + today.getDate() + ', ' + today.getFullYear();
   }
 
   function logout() {
