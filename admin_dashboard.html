@@ -578,15 +578,8 @@
     <a onclick="showSection('announcements', this)">
       <i class="fas fa-bullhorn"></i> Announcements
     </a>
-    <div class="nav-section-label">Members</div>
-    <a onclick="showSection('applications', this)">
-      <i class="fas fa-file-alt"></i> Club Applications <span id="apps-badge" style="display:none;background:#E74C3C;color:#fff;font-size:0.68rem;padding:1px 6px;border-radius:99px;margin-left:4px;"></span>
-    </a>
   </nav>
 
-  <div class="sidebar-footer">
-    <a onclick="logout()"><i class="fas fa-sign-out-alt"></i> Log Out</a>
-  </div>
 
 </aside>
 
@@ -625,7 +618,7 @@
             <div class="stat-icon si-gold"><i class="fas fa-id-card"></i></div>
             <div class="stat-body">
               <div class="stat-value" id="dash-stat-members">0</div>
-              <div class="stat-label">Total Users</div>
+              <div class="stat-label">Total Members</div>
             </div>
           </div>
         </div>
@@ -791,12 +784,11 @@
           <span class="panel-title">Activity Log</span>
           <div class="filter-bar">
             <input class="search-input" type="text" placeholder="Search activities…" id="activities-search" oninput="filterActivitiesTable()">
-            <button class="btn-sm primary" onclick="openAddActivityModal()">+ Add Activity</button>
           </div>
         </div>
         <div style="overflow-x:auto;">
           <table class="data-table" id="activities-table">
-            <thead><tr><th>Activity</th><th>Club</th><th>Type</th><th>Date</th><th>Status</th><th></th></tr></thead>
+            <thead><tr><th>Activity</th><th>Club</th><th>Type</th><th>Date</th><th>Status</th></tr></thead>
             <tbody id="activities-tbody">
               <tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">No activities logged yet</td></tr>
             </tbody>
@@ -811,6 +803,12 @@
 
     <div class="page-section" id="section-announcements">
 
+      <div class="row mb-4" style="row-gap:1rem;">
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon si-blue"><i class="fas fa-bullhorn"></i></div><div class="stat-body"><div class="stat-value" id="announcements-stat-published">0</div><div class="stat-label">Published</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon si-amber"><i class="fas fa-hourglass-half"></i></div><div class="stat-body"><div class="stat-value" id="announcements-stat-pending">0</div><div class="stat-label">Pending</div></div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card"><div class="stat-icon si-red"><i class="fas fa-times-circle"></i></div><div class="stat-body"><div class="stat-value" id="announcements-stat-rejected">0</div><div class="stat-label">Rejected</div></div></div></div>
+        
+      </div>
 
       <div class="panel">
         <div class="panel-header">
@@ -818,7 +816,6 @@
           <div class="filter-bar">
             <input class="search-input" type="text" placeholder="Search announcements…" id="announcements-search" oninput="filterAnnouncementsTable()">
             <select class="filter-select" id="announcements-status-filter" onchange="filterAnnouncementsTable()"><option value="">All Status</option><option value="Published">Published</option><option value="Pending">Pending</option><option value="Rejected">Rejected</option></select>
-            <button class="btn-sm primary" onclick="openAddAnnouncementModal()">+ Add Announcement</button>
           </div>
         </div>
         <div style="overflow-x:auto;">
@@ -834,34 +831,6 @@
         </div>
       </div>
 
-    </div>
-
-    <div class="page-section" id="section-applications">
-      <div class="panel">
-        <div class="panel-header">
-          <span class="panel-title">Club Applications</span>
-          <div class="filter-bar">
-            <input class="search-input" type="text" placeholder="Search by name or club…" id="apps-search" oninput="filterApplicationsTable()">
-            <select class="filter-select" id="apps-status-filter" onchange="filterApplicationsTable()">
-              <option value="">All Status</option>
-              <option value="Pending">Pending</option>
-              <option value="Accepted">Accepted</option>
-              <option value="Rejected">Rejected</option>
-            </select>
-          </div>
-        </div>
-        <div style="overflow-x:auto;">
-          <table class="data-table" id="apps-table">
-            <thead><tr><th>Applicant</th><th>Student ID</th><th>Club</th><th>Reason</th><th>Date</th><th>Status</th><th></th></tr></thead>
-            <tbody id="apps-tbody">
-              <tr><td colspan="7" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">Loading…</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="panel-footer">
-          <span id="apps-count">Showing 0 applications</span>
-        </div>
-      </div>
     </div>
 
   </main>
@@ -1227,80 +1196,6 @@
     loadEvents();
     loadActivities();
     loadAnnouncements();
-    loadApplications();
-  }
-
-  let allApplications = [];
-
-  function loadApplications() {
-    fetch(`${API_BASE}api/applications?action=list_all`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
-      .then(r => r.json())
-      .then(data => {
-        if (data.success) {
-          allApplications = data.applications || [];
-          renderApplicationsTable(allApplications);
-          const pending = allApplications.filter(a => a.status === 'Pending').length;
-          const badge = document.getElementById('apps-badge');
-          if (badge) {
-            if (pending > 0) { badge.textContent = pending; badge.style.display = ''; }
-            else badge.style.display = 'none';
-          }
-        }
-      })
-      .catch(() => {});
-  }
-
-  function renderApplicationsTable(list) {
-    const tbody = document.getElementById('apps-tbody');
-    const countEl = document.getElementById('apps-count');
-    if (!list.length) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">No applications found</td></tr>';
-      if (countEl) countEl.textContent = 'Showing 0 applications';
-      return;
-    }
-    const statusColor = { Pending: '#f59e0b', Accepted: '#22c55e', Rejected: '#ef4444' };
-    tbody.innerHTML = list.map(a => `
-      <tr data-id="${a.id}">
-        <td>${escHtml(a.full_name)}</td>
-        <td>${escHtml(a.student_id)}</td>
-        <td>${escHtml(a.club_name || '—')}</td>
-        <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escHtml(a.reason||'')}">${escHtml(a.reason || '—')}</td>
-        <td>${a.created_at ? new Date(a.created_at).toLocaleDateString() : '—'}</td>
-        <td><span style="font-size:0.75rem;font-weight:600;color:${statusColor[a.status]||'#64748b'}">${escHtml(a.status)}</span></td>
-        <td style="white-space:nowrap;">
-          ${a.status === 'Pending' ? `
-            <button class="btn-sm primary" style="margin-right:4px;" onclick="updateAppStatus(${a.id},'Accepted')">Accept</button>
-            <button class="btn-sm" style="background:#fee2e2;color:#ef4444;border:none;" onclick="updateAppStatus(${a.id},'Rejected')">Reject</button>
-          ` : `<button class="btn-sm" onclick="updateAppStatus(${a.id},'Pending')">Reset</button>`}
-        </td>
-      </tr>
-    `).join('');
-    if (countEl) countEl.textContent = `Showing ${list.length} application${list.length !== 1 ? 's' : ''}`;
-  }
-
-  function escHtml(str) {
-    return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  function filterApplicationsTable() {
-    const q = (document.getElementById('apps-search').value || '').toLowerCase();
-    const s = document.getElementById('apps-status-filter').value;
-    const filtered = allApplications.filter(a => {
-      const matchQ = !q || a.full_name.toLowerCase().includes(q) || (a.club_name||'').toLowerCase().includes(q) || (a.student_id||'').toLowerCase().includes(q);
-      const matchS = !s || a.status === s;
-      return matchQ && matchS;
-    });
-    renderApplicationsTable(filtered);
-  }
-
-  function updateAppStatus(id, status) {
-    fetch(`${API_BASE}api/applications?action=update_status`, {
-      method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-Session-Token': getSessionToken() },
-      body: JSON.stringify({ id, status })
-    })
-      .then(r => r.json())
-      .then(data => { if (data.success) loadApplications(); else alert(data.error || 'Failed to update'); })
-      .catch(() => alert('Network error'));
   }
 
   function loadClubs() {
@@ -1343,29 +1238,15 @@
   }
 
   function loadActivities() {
-    fetch(`${API_BASE}api/activities?action=list`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
-      .then(r => r.json())
-      .then(data => {
-        if (data.success && data.activities) {
-          allActivities = data.activities;
-          renderActivities(allActivities);
-          updateActivityStats(allActivities);
-        }
-      })
-      .catch(() => {});
+    allActivities = [];
+    renderActivities(allActivities);
+    updateActivityStats(allActivities);
   }
 
   function loadAnnouncements() {
-    fetch(`${API_BASE}api/announcements?action=list`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
-      .then(r => r.json())
-      .then(data => {
-        if (data.success && data.announcements) {
-          allAnnouncements = data.announcements;
-          renderAnnouncements(allAnnouncements);
-          updateAnnouncementStats(allAnnouncements);
-        }
-      })
-      .catch(() => {});
+    allAnnouncements = [];
+    renderAnnouncements(allAnnouncements);
+    updateAnnouncementStats(allAnnouncements);
   }
 
   function renderClubs(clubs) {
@@ -1384,7 +1265,7 @@
         <td><span class="badge-cat bc-${club.category.toLowerCase()}">${escHtml(club.category)}</span></td>
         <td>${club.member_count || 0}</td>
         <td><span class="badge-status bs-${club.status.toLowerCase()}">${escHtml(club.status)}</span></td>
-        <td><button class="tbl-action" onclick="editClub(${club.id})"><i class="fas fa-edit"></i></button><button class="tbl-action del" onclick="confirmDelete('club', ${club.id}, '${escHtml(club.name)}')"><i class="fas fa-trash-alt"></i></button></td>
+        <td><button class="tbl-action" onclick="editClub(${club.id})"><i class="fas fa-edit"></i></button><button class="tbl-action del" onclick="deleteClub(${club.id})"><i class="fas fa-trash-alt"></i></button></td>
       </tr>
     `).join('');
 
@@ -1414,12 +1295,11 @@
       return ((a.first_name||'')+(a.last_name||'')).localeCompare((b.first_name||'')+(b.last_name||''));
     });
     const html = sorted.map(user => {
-      const fullName = escHtml((user.first_name||'') + ' ' + (user.last_name||'')).trim();
-      const actionButtons = user.role === 'admin'
-        ? `<td style="display:flex;gap:0.3rem;"><button class="tbl-action" onclick="viewUserDetails(${user.id})"><i class="fas fa-eye"></i></button></td>`
-        : user.role === 'officer'
-        ? `<td style="display:flex;gap:0.3rem;"><button class="tbl-action" onclick="viewUserDetails(${user.id})"><i class="fas fa-eye"></i></button><button class="tbl-action" onclick="openResetPasswordModal(${user.id}, '${fullName}')"><i class="fas fa-key"></i></button><button class="tbl-action" onclick="openRemoveOfficerModal(${user.id}, '${fullName}')"><i class="fas fa-arrow-down"></i> Demote</button><button class="tbl-action del" onclick="confirmDelete('user', ${user.id}, '${fullName}')"><i class="fas fa-trash-alt"></i></button></td>`
-        : `<td style="display:flex;gap:0.3rem;"><button class="tbl-action" onclick="viewUserDetails(${user.id})"><i class="fas fa-eye"></i></button><button class="tbl-action" onclick="openResetPasswordModal(${user.id}, '${fullName}')"><i class="fas fa-key"></i></button><button class="tbl-action" onclick="openMakeOfficerModal(${user.id}, '${fullName}')"><i class="fas fa-arrow-up"></i> Promote</button><button class="tbl-action del" onclick="confirmDelete('user', ${user.id}, '${fullName}')"><i class="fas fa-trash-alt"></i></button></td>`;
+      const actionButtons = user.role === 'admin' ?
+        '<td style="font-size:0.7rem;color:var(--muted);">System Admin</td>' :
+        user.role === 'officer' ?
+        `<td><button class="tbl-action" onclick="openRemoveOfficerModal(${user.id}, '${escHtml(user.first_name)} ${escHtml(user.last_name)}')"><i class="fas fa-arrow-down"></i> Demote</button></td>` :
+        `<td><button class="tbl-action" onclick="openMakeOfficerModal(${user.id}, '${escHtml(user.first_name)} ${escHtml(user.last_name)}')"><i class="fas fa-arrow-up"></i> Promote</button></td>`;
 
       return `
         <tr>
@@ -1451,7 +1331,7 @@
           <td>${escHtml(evt.club_name || '—')}</td>
           <td>${date}</td>
           <td><span class="badge-status bs-${evt.status.toLowerCase()}">${escHtml(evt.status)}</span></td>
-          <td><button class="tbl-action" onclick="editEvent(${evt.id})"><i class="fas fa-edit"></i></button><button class="tbl-action del" onclick="confirmDelete('event', ${evt.id}, '${escHtml(evt.name)}')"><i class="fas fa-trash-alt"></i></button></td>
+          <td><button class="tbl-action" onclick="editEvent(${evt.id})"><i class="fas fa-edit"></i></button><button class="tbl-action del" onclick="deleteEvent(${evt.id})"><i class="fas fa-trash-alt"></i></button></td>
         </tr>
       `;
     }).join('');
@@ -1476,7 +1356,6 @@
           <td><span class="badge-status" style="background:rgba(59,130,246,0.1);color:var(--blue);">${escHtml(activity.activity_type)}</span></td>
           <td>${date}</td>
           <td><span class="badge-status bs-${activity.status.toLowerCase()}">${escHtml(activity.status)}</span></td>
-          <td style="display:flex;gap:0.3rem;"><button class="tbl-action" onclick="editActivity(${activity.id})"><i class="fas fa-edit"></i></button><button class="tbl-action del" onclick="confirmDelete('activity', ${activity.id}, '${escHtml(activity.name)}')"><i class="fas fa-trash-alt"></i></button></td>
         </tr>
       `;
     }).join('');
@@ -1500,7 +1379,7 @@
           <td>${escHtml(ann.club_name || '—')}</td>
           <td><span class="badge-status bs-${ann.status.toLowerCase()}">${escHtml(ann.status)}</span></td>
           <td style="font-size:0.75rem;color:var(--muted);">${created}</td>
-          <td style="display:flex;gap:0.3rem;"><button class="tbl-action" onclick="editAnnouncement(${ann.id})"><i class="fas fa-edit"></i></button><button class="tbl-action del" onclick="confirmDelete('announcement', ${ann.id}, '${escHtml(ann.title)}')"><i class="fas fa-trash-alt"></i></button></td>
+          <td><button class="tbl-action" onclick="editAnnouncement(${ann.id})"><i class="fas fa-edit"></i></button><button class="tbl-action del" onclick="deleteAnnouncement(${ann.id})"><i class="fas fa-trash-alt"></i></button></td>
         </tr>
       `;
     }).join('');
@@ -1638,6 +1517,7 @@
   }
 
   function deleteClub(clubId) {
+    if (!confirm('Delete this club?')) return;
 
     fetch(`${API_BASE}api/clubs?action=delete`, {
       method: 'POST',
@@ -1654,6 +1534,7 @@
   }
 
   function deleteEvent(eventId) {
+    if (!confirm('Delete this event?')) return;
 
     fetch(`${API_BASE}api/events?action=delete`, {
       method: 'POST',
@@ -1670,7 +1551,8 @@
   }
 
   function deleteAnnouncement(announcementId) {
-    confirmDelete('announcement', announcementId, 'this announcement');
+    if (!confirm('Delete this announcement?')) return;
+    loadAnnouncements();
   }
 
   function editClub(clubId) {
@@ -1685,105 +1567,8 @@
     alert('Edit functionality coming soon');
   }
 
-  function confirmDelete(type, id, label) {
-    document.getElementById('confirm-delete-msg').textContent = 'Are you sure you want to delete "' + label + '"? This cannot be undone.';
-    document.getElementById('confirm-delete-btn').onclick = function() {
-      closeConfirmDeleteModal();
-      if (type === 'club') deleteClub(id);
-      else if (type === 'event') deleteEvent(id);
-      else if (type === 'user') deleteUser(id, label);
-      else if (type === 'activity') deleteActivity(id);
-      else if (type === 'announcement') deleteAnnouncementById(id);
-    };
-    document.getElementById('confirmDeleteModal').classList.add('open');
-  }
-
-  function closeConfirmDeleteModal() {
-    document.getElementById('confirmDeleteModal').classList.remove('open');
-  }
-
-  function deleteActivity(id) {
-    fetch(`${API_BASE}api/activities?action=delete`, {
-      method: 'POST', headers: authHeaders(), credentials: 'include',
-      body: JSON.stringify({ id: id })
-    }).then(r => r.json()).then(data => { if (data.success) loadActivities(); });
-  }
-
-  function deleteAnnouncementById(id) {
-    fetch(`${API_BASE}api/announcements?action=delete`, {
-      method: 'POST', headers: authHeaders(), credentials: 'include',
-      body: JSON.stringify({ id: id })
-    }).then(r => r.json()).then(data => { if (data.success) loadAnnouncements(); });
-  }
-
-  function editActivity(activityId) {
-    const act = allActivities.find(a => a.id === activityId);
-    if (!act) return;
-    document.getElementById('edit-act-id').value = act.id;
-    document.getElementById('edit-act-name').value = act.name || '';
-    document.getElementById('edit-act-club').value = act.club_name || '';
-    document.getElementById('edit-act-type').value = act.activity_type || 'General';
-    document.getElementById('edit-act-date').value = act.activity_date ? act.activity_date.split('T')[0] : '';
-    document.getElementById('edit-act-status').value = act.status || 'Planned';
-    document.getElementById('edit-act-desc').value = act.description || '';
-    document.getElementById('editActivityModal').classList.add('open');
-  }
-
-  function closeEditActivityModal() {
-    document.getElementById('editActivityModal').classList.remove('open');
-  }
-
-  function submitEditActivity() {
-    const id = document.getElementById('edit-act-id').value;
-    const name = document.getElementById('edit-act-name').value.trim();
-    if (!name) { alert('Activity name is required'); return; }
-    fetch(`${API_BASE}api/activities?action=update`, {
-      method: 'POST', headers: authHeaders(), credentials: 'include',
-      body: JSON.stringify({
-        id, name,
-        club: document.getElementById('edit-act-club').value.trim(),
-        activity_type: document.getElementById('edit-act-type').value,
-        date: document.getElementById('edit-act-date').value,
-        status: document.getElementById('edit-act-status').value,
-        description: document.getElementById('edit-act-desc').value.trim(),
-      })
-    }).then(r => r.json()).then(data => {
-      if (data.success) { closeEditActivityModal(); loadActivities(); }
-      else alert(data.error || 'Failed to update activity');
-    });
-  }
-
-  function editAnnouncement(annId) {
-    const ann = allAnnouncements.find(a => a.id === annId);
-    if (!ann) return;
-    document.getElementById('edit-ann-id').value = ann.id;
-    document.getElementById('edit-ann-title').value = ann.title || '';
-    document.getElementById('edit-ann-club').value = ann.club_name || '';
-    document.getElementById('edit-ann-status').value = ann.status || 'Published';
-    document.getElementById('edit-ann-body').value = ann.body || '';
-    document.getElementById('editAnnouncementModal').classList.add('open');
-  }
-
-  function closeEditAnnouncementModal() {
-    document.getElementById('editAnnouncementModal').classList.remove('open');
-  }
-
-  function submitEditAnnouncement() {
-    const id = document.getElementById('edit-ann-id').value;
-    const title = document.getElementById('edit-ann-title').value.trim();
-    if (!title) { alert('Title is required'); return; }
-    fetch(`${API_BASE}api/announcements?action=update`, {
-      method: 'POST', headers: authHeaders(), credentials: 'include',
-      body: JSON.stringify({
-        id, title,
-        club: document.getElementById('edit-ann-club').value.trim(),
-        status: document.getElementById('edit-ann-status').value,
-        body: document.getElementById('edit-ann-body').value.trim(),
-      })
-    }).then(r => r.json()).then(data => {
-      if (data.success) { closeEditAnnouncementModal(); loadAnnouncements(); }
-      else alert(data.error || 'Failed to update announcement');
-    });
+  function editAnnouncement(announcementId) {
+    alert('Edit functionality coming soon');
   }
 
   function showSection(name, el) {
@@ -2087,6 +1872,7 @@
   }
 
   function deleteUser(userId, userName) {
+    if (!confirm('Delete ' + userName + '? This cannot be undone.')) return;
     fetch(`${API_BASE}api/users?action=delete`, {
       method: 'POST', headers: authHeaders(), credentials: 'include',
       body: JSON.stringify({ id: userId })
@@ -2188,100 +1974,6 @@
     });
   }
 
-  function viewUserDetails(userId) {
-    const user = allUsers.find(u => u.id === userId);
-    if (!user) return;
-    const name = ((user.first_name||'') + ' ' + (user.last_name||'')).trim() || '—';
-    const initials = ((user.first_name||'?')[0] + (user.last_name||'?')[0]).toUpperCase();
-    document.getElementById('ud-avatar').textContent = initials;
-    document.getElementById('ud-name').textContent = name;
-    document.getElementById('ud-role').textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1);
-    document.getElementById('ud-email').textContent = user.email || '—';
-    document.getElementById('ud-studentid').textContent = user.student_id || '—';
-    document.getElementById('ud-since').textContent = user.created_at ? new Date(user.created_at).toLocaleDateString() : '—';
-
-    const memberOf = allClubs.filter(c => c.members && c.members.some(m => m.user_id === userId));
-    const leadsOf = allClubs.filter(c => c.leader_id === userId);
-    document.getElementById('ud-clubs').textContent = memberOf.length ? memberOf.map(c => c.name).join(', ') : '—';
-    document.getElementById('ud-leads').textContent = leadsOf.length ? leadsOf.map(c => c.name).join(', ') : '—';
-
-    document.getElementById('userDetailModal').classList.add('open');
-  }
-
-  function closeUserDetailModal() {
-    document.getElementById('userDetailModal').classList.remove('open');
-  }
-
-  function openAddActivityModal() {
-    document.getElementById('addActivityModal').classList.add('open');
-    document.getElementById('act-name').value = '';
-    document.getElementById('act-club').value = '';
-    document.getElementById('act-type').value = 'General';
-    document.getElementById('act-date').value = '';
-    document.getElementById('act-status').value = 'Planned';
-    document.getElementById('act-desc').value = '';
-  }
-
-  function closeAddActivityModal() {
-    document.getElementById('addActivityModal').classList.remove('open');
-  }
-
-  function submitAddActivity() {
-    const name = document.getElementById('act-name').value.trim();
-    if (!name) { alert('Activity name is required'); return; }
-    fetch(`${API_BASE}api/activities?action=create`, {
-      method: 'POST',
-      headers: authHeaders(),
-      credentials: 'include',
-      body: JSON.stringify({
-        name: name,
-        club: document.getElementById('act-club').value.trim(),
-        activity_type: document.getElementById('act-type').value,
-        date: document.getElementById('act-date').value,
-        status: document.getElementById('act-status').value,
-        description: document.getElementById('act-desc').value.trim(),
-      })
-    })
-      .then(r => r.json())
-      .then(data => {
-        if (data.success) { closeAddActivityModal(); loadActivities(); }
-        else alert(data.error || 'Failed to create activity');
-      });
-  }
-
-  function openAddAnnouncementModal() {
-    document.getElementById('addAnnouncementModal').classList.add('open');
-    document.getElementById('ann-title').value = '';
-    document.getElementById('ann-club').value = '';
-    document.getElementById('ann-status').value = 'Published';
-    document.getElementById('ann-body').value = '';
-  }
-
-  function closeAddAnnouncementModal() {
-    document.getElementById('addAnnouncementModal').classList.remove('open');
-  }
-
-  function submitAddAnnouncement() {
-    const title = document.getElementById('ann-title').value.trim();
-    if (!title) { alert('Title is required'); return; }
-    fetch(`${API_BASE}api/announcements?action=create`, {
-      method: 'POST',
-      headers: authHeaders(),
-      credentials: 'include',
-      body: JSON.stringify({
-        title: title,
-        club: document.getElementById('ann-club').value.trim(),
-        status: document.getElementById('ann-status').value,
-        body: document.getElementById('ann-body').value.trim(),
-      })
-    })
-      .then(r => r.json())
-      .then(data => {
-        if (data.success) { closeAddAnnouncementModal(); loadAnnouncements(); }
-        else alert(data.error || 'Failed to create announcement');
-      });
-  }
-
   function logout() {
     fetch(`${API_BASE}api/logout`, {
       method: 'POST',
@@ -2371,90 +2063,6 @@
       .catch(err => {
         console.error('Error:', err);
         alert('Error creating student account');
-      });
-  }
-
-  let resetPasswordUserId = null;
-
-  function openResetPasswordModal(userId, userName) {
-    resetPasswordUserId = userId;
-    document.getElementById('reset-pw-name').textContent = userName;
-    document.getElementById('reset-pw-input').value = '';
-    document.getElementById('reset-pw-confirm').value = '';
-    document.getElementById('reset-pw-error').style.display = 'none';
-    document.getElementById('reset-pw-error').textContent = '';
-    document.getElementById('reset-pw-btn').disabled = false;
-    document.getElementById('reset-pw-btn').textContent = 'Reset Password ✓';
-    document.getElementById('resetPasswordModal').classList.add('open');
-  }
-
-  function closeResetPasswordModal() {
-    document.getElementById('resetPasswordModal').classList.remove('open');
-    resetPasswordUserId = null;
-  }
-
-  document.getElementById('resetPasswordModal').addEventListener('click', function(e) {
-    if (e.target === this) closeResetPasswordModal();
-  });
-
-  function toggleResetPwVisibility() {
-    const input = document.getElementById('reset-pw-input');
-    const eye   = document.getElementById('reset-pw-eye');
-    if (input.type === 'password') {
-      input.type = 'text';
-      eye.classList.replace('fa-eye', 'fa-eye-slash');
-    } else {
-      input.type = 'password';
-      eye.classList.replace('fa-eye-slash', 'fa-eye');
-    }
-  }
-
-  function submitResetPassword() {
-    const pass    = document.getElementById('reset-pw-input').value;
-    const confirm = document.getElementById('reset-pw-confirm').value;
-    const errEl   = document.getElementById('reset-pw-error');
-    const btn     = document.getElementById('reset-pw-btn');
-
-    errEl.style.display = 'none';
-    errEl.textContent = '';
-
-    if (pass.length < 6) {
-      errEl.textContent = 'Password must be at least 6 characters.';
-      errEl.style.display = '';
-      return;
-    }
-    if (pass !== confirm) {
-      errEl.textContent = 'Passwords do not match.';
-      errEl.style.display = '';
-      return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = 'Resetting…';
-
-    fetch(`${API_BASE}api/users?action=reset_password`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json', 'X-Session-Token': getSessionToken() },
-      body: JSON.stringify({ id: resetPasswordUserId, password: pass })
-    })
-      .then(r => r.json())
-      .then(data => {
-        if (data.success) {
-          closeResetPasswordModal();
-          alert('Password reset successfully.');
-        } else {
-          btn.disabled = false;
-          btn.textContent = 'Reset Password ✓';
-          errEl.textContent = data.error || 'Failed to reset password.';
-          errEl.style.display = '';
-        }
-      })
-      .catch(() => {
-        btn.disabled = false;
-        btn.textContent = 'Reset Password ✓';
-        errEl.textContent = 'Network error. Please try again.';
-        errEl.style.display = '';
       });
   }
 
@@ -2630,214 +2238,9 @@
   </div>
 </div>
 <script>
-  document.getElementById('confirmDeleteModal').addEventListener('click', function(e) { if(e.target===this) closeConfirmDeleteModal(); });
-  document.getElementById('editActivityModal').addEventListener('click', function(e) { if(e.target===this) closeEditActivityModal(); });
-  document.getElementById('editAnnouncementModal').addEventListener('click', function(e) { if(e.target===this) closeEditAnnouncementModal(); });
-  document.getElementById('userDetailModal').addEventListener('click', function(e) { if(e.target===this) closeUserDetailModal(); });
-  document.getElementById('addActivityModal').addEventListener('click', function(e) { if(e.target===this) closeAddActivityModal(); });
-  document.getElementById('addAnnouncementModal').addEventListener('click', function(e) { if(e.target===this) closeAddAnnouncementModal(); });
   document.getElementById('profileModal').addEventListener('click', function(e) { if(e.target===this) closeProfileModal(); });
   document.getElementById('editClubModal').addEventListener('click', function(e) { if(e.target===this) closeEditClubModal(); });
   document.getElementById('editEventModal').addEventListener('click', function(e) { if(e.target===this) closeEditEventModal(); });
 </script>
-
-<div class="modal-overlay" id="userDetailModal">
-  <div class="modal-box" style="max-width:460px;">
-    <div class="modal-header">
-      <span class="modal-title">User Details</span>
-      <button class="modal-close" onclick="closeUserDetailModal()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal-body">
-      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;">
-        <div id="ud-avatar" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--navy-light),var(--navy));color:white;font-size:1.1rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">?</div>
-        <div>
-          <div style="font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--ink);" id="ud-name">—</div>
-          <div style="font-size:0.75rem;color:var(--muted);" id="ud-role">—</div>
-        </div>
-      </div>
-      <div class="profile-detail-row"><span class="profile-detail-label">Email</span><span id="ud-email">—</span></div>
-      <div class="profile-detail-row"><span class="profile-detail-label">Student ID</span><span id="ud-studentid">—</span></div>
-      <div class="profile-detail-row"><span class="profile-detail-label">Member Since</span><span id="ud-since">—</span></div>
-      <div class="profile-detail-row"><span class="profile-detail-label">Clubs</span><span id="ud-clubs" style="text-align:right;max-width:60%;">—</span></div>
-      <div class="profile-detail-row"><span class="profile-detail-label">Leads</span><span id="ud-leads" style="text-align:right;max-width:60%;">—</span></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-modal-next" onclick="closeUserDetailModal()">Close</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="addActivityModal">
-  <div class="modal-box" style="max-width:480px;">
-    <div class="modal-header">
-      <span class="modal-title">Log Activity</span>
-      <button class="modal-close" onclick="closeAddActivityModal()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group"><label class="form-label">Activity Name <span style="color:var(--red)">*</span></label><input class="form-control-ccc" id="act-name" type="text" placeholder="Activity name"></div>
-      <div style="display:flex;gap:0.6rem;">
-        <div class="form-group" style="flex:1"><label class="form-label">Club (optional)</label><input class="form-control-ccc" id="act-club" type="text" placeholder="Leave blank for general"></div>
-        <div class="form-group" style="flex:1"><label class="form-label">Type</label>
-          <select class="form-control-ccc" id="act-type">
-            <option value="General">General</option>
-            <option value="Meeting">Meeting</option>
-            <option value="Event">Event</option>
-            <option value="Training">Training</option>
-            <option value="Competition">Competition</option>
-            <option value="Community Service">Community Service</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-      </div>
-      <div style="display:flex;gap:0.6rem;">
-        <div class="form-group" style="flex:1"><label class="form-label">Date</label><input class="form-control-ccc" id="act-date" type="date"></div>
-        <div class="form-group" style="flex:1"><label class="form-label">Status</label>
-          <select class="form-control-ccc" id="act-status">
-            <option value="Planned">Planned</option>
-            <option value="Ongoing">Ongoing</option>
-            <option value="Completed">Completed</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group"><label class="form-label">Description</label><textarea class="form-control-ccc" id="act-desc" rows="3" style="resize:vertical;"></textarea></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-modal-back" onclick="closeAddActivityModal()">Cancel</button>
-      <button class="btn-modal-next gold" onclick="submitAddActivity()">Log Activity ✓</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="addAnnouncementModal">
-  <div class="modal-box" style="max-width:480px;">
-    <div class="modal-header">
-      <span class="modal-title">New Announcement</span>
-      <button class="modal-close" onclick="closeAddAnnouncementModal()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group"><label class="form-label">Title <span style="color:var(--red)">*</span></label><input class="form-control-ccc" id="ann-title" type="text" placeholder="Announcement title"></div>
-      <div style="display:flex;gap:0.6rem;">
-        <div class="form-group" style="flex:1"><label class="form-label">Club (optional)</label><input class="form-control-ccc" id="ann-club" type="text" placeholder="Leave blank for general"></div>
-        <div class="form-group" style="flex:1"><label class="form-label">Status</label>
-          <select class="form-control-ccc" id="ann-status">
-            <option value="Published">Published</option>
-            <option value="Pending">Pending</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group"><label class="form-label">Message</label><textarea class="form-control-ccc" id="ann-body" rows="4" style="resize:vertical;" placeholder="Write your announcement here…"></textarea></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-modal-back" onclick="closeAddAnnouncementModal()">Cancel</button>
-      <button class="btn-modal-next gold" onclick="submitAddAnnouncement()">Post Announcement ✓</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="confirmDeleteModal">
-  <div class="modal-box" style="max-width:400px;">
-    <div class="modal-body" style="padding-top:1.5rem;">
-      <p style="font-size:0.88rem;color:var(--ink);line-height:1.6;" id="confirm-delete-msg"></p>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-modal-back" onclick="closeConfirmDeleteModal()">Cancel</button>
-      <button class="btn-modal-next" style="background:var(--red);color:white;" id="confirm-delete-btn">Delete</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="editActivityModal">
-  <div class="modal-box" style="max-width:480px;">
-    <div class="modal-header">
-      <span class="modal-title">Edit Activity</span>
-      <button class="modal-close" onclick="closeEditActivityModal()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal-body">
-      <input type="hidden" id="edit-act-id">
-      <div class="form-group"><label class="form-label">Activity Name <span style="color:var(--red)">*</span></label><input class="form-control-ccc" id="edit-act-name" type="text"></div>
-      <div style="display:flex;gap:0.6rem;">
-        <div class="form-group" style="flex:1"><label class="form-label">Club (optional)</label><input class="form-control-ccc" id="edit-act-club" type="text" placeholder="Leave blank for general"></div>
-        <div class="form-group" style="flex:1"><label class="form-label">Type</label>
-          <select class="form-control-ccc" id="edit-act-type">
-            <option value="General">General</option><option value="Meeting">Meeting</option>
-            <option value="Event">Event</option><option value="Training">Training</option>
-            <option value="Competition">Competition</option><option value="Community Service">Community Service</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-      </div>
-      <div style="display:flex;gap:0.6rem;">
-        <div class="form-group" style="flex:1"><label class="form-label">Date</label><input class="form-control-ccc" id="edit-act-date" type="date"></div>
-        <div class="form-group" style="flex:1"><label class="form-label">Status</label>
-          <select class="form-control-ccc" id="edit-act-status">
-            <option value="Planned">Planned</option><option value="Ongoing">Ongoing</option><option value="Completed">Completed</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group"><label class="form-label">Description</label><textarea class="form-control-ccc" id="edit-act-desc" rows="3" style="resize:vertical;"></textarea></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-modal-back" onclick="closeEditActivityModal()">Cancel</button>
-      <button class="btn-modal-next gold" onclick="submitEditActivity()">Save Changes ✓</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="editAnnouncementModal">
-  <div class="modal-box" style="max-width:480px;">
-    <div class="modal-header">
-      <span class="modal-title">Edit Announcement</span>
-      <button class="modal-close" onclick="closeEditAnnouncementModal()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal-body">
-      <input type="hidden" id="edit-ann-id">
-      <div class="form-group"><label class="form-label">Title <span style="color:var(--red)">*</span></label><input class="form-control-ccc" id="edit-ann-title" type="text"></div>
-      <div style="display:flex;gap:0.6rem;">
-        <div class="form-group" style="flex:1"><label class="form-label">Club (optional)</label><input class="form-control-ccc" id="edit-ann-club" type="text" placeholder="Leave blank for general"></div>
-        <div class="form-group" style="flex:1"><label class="form-label">Status</label>
-          <select class="form-control-ccc" id="edit-ann-status">
-            <option value="Published">Published</option><option value="Pending">Pending</option><option value="Rejected">Rejected</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group"><label class="form-label">Message</label><textarea class="form-control-ccc" id="edit-ann-body" rows="4" style="resize:vertical;"></textarea></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-modal-back" onclick="closeEditAnnouncementModal()">Cancel</button>
-      <button class="btn-modal-next gold" onclick="submitEditAnnouncement()">Save Changes ✓</button>
-    </div>
-  </div>
-</div>
-<div class="modal-overlay" id="resetPasswordModal">
-  <div class="modal-box" style="max-width:420px;">
-    <div class="modal-header">
-      <span class="modal-title">Reset Password</span>
-      <button class="modal-close" onclick="closeResetPasswordModal()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal-body">
-      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.2rem;line-height:1.55;">
-        Set a new password for <strong id="reset-pw-name"></strong>. The user will need to use this new password on their next login.
-      </p>
-      <div class="form-group">
-        <label class="form-label">New Password <span style="color:var(--red)">*</span></label>
-        <div style="position:relative;">
-          <input class="form-control-ccc" id="reset-pw-input" type="password" placeholder="Min. 6 characters" style="padding-right:2.5rem;">
-          <button type="button" onclick="toggleResetPwVisibility()" style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:0;" tabindex="-1">
-            <i class="fas fa-eye" id="reset-pw-eye"></i>
-          </button>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Confirm Password <span style="color:var(--red)">*</span></label>
-        <input class="form-control-ccc" id="reset-pw-confirm" type="password" placeholder="Re-enter password">
-      </div>
-      <div id="reset-pw-error" style="display:none;font-size:0.78rem;color:var(--red);margin-top:0.25rem;"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-modal-back" onclick="closeResetPasswordModal()">Cancel</button>
-      <button class="btn-modal-next gold" id="reset-pw-btn" onclick="submitResetPassword()">Reset Password ✓</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
