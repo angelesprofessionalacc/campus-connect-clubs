@@ -580,6 +580,9 @@
     </a>
   </nav>
 
+  <div class="sidebar-footer">
+    <a onclick="logout()"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+  </div>
 
 </aside>
 
@@ -1561,8 +1564,7 @@
   }
 
   function deleteAnnouncement(announcementId) {
-    if (!confirm('Delete this announcement?')) return;
-    loadAnnouncements();
+    confirmDelete('announcement', announcementId, 'this announcement');
   }
 
   function editClub(clubId) {
@@ -1979,7 +1981,6 @@
   }
 
   function deleteUser(userId, userName) {
-    if (!confirm('Delete ' + userName + '? This cannot be undone.')) return;
     fetch(`${API_BASE}api/users?action=delete`, {
       method: 'POST', headers: authHeaders(), credentials: 'include',
       body: JSON.stringify({ id: userId })
@@ -2545,11 +2546,7 @@
 
 <div class="modal-overlay" id="confirmDeleteModal">
   <div class="modal-box" style="max-width:400px;">
-    <div class="modal-header">
-      <span class="modal-title">Confirm Delete</span>
-      <button class="modal-close" onclick="closeConfirmDeleteModal()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal-body">
+    <div class="modal-body" style="padding-top:1.5rem;">
       <p style="font-size:0.88rem;color:var(--ink);line-height:1.6;" id="confirm-delete-msg"></p>
     </div>
     <div class="modal-footer">
