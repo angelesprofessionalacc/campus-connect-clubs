@@ -218,6 +218,18 @@
       color: var(--ink);
     }
 
+    .topbar-profile-btn-inner {
+      display:flex;align-items:center;gap:0.5rem;background:var(--field-bg,#F5F9FD);
+      border:1px solid var(--border,#C8D8EA);border-radius:10px;padding:0.35rem 0.75rem 0.35rem 0.4rem;
+      cursor:pointer;font-family:'Outfit',sans-serif;font-size:0.82rem;font-weight:500;color:var(--ink,#0D1B3E);
+      transition:border-color 0.15s,box-shadow 0.15s;
+    }
+    .topbar-profile-btn:hover { border-color:#1E3160;box-shadow:0 0 0 3px rgba(30,49,96,0.06); }
+    .topbar-avatar-s {
+      width:28px;height:28px;border-radius:50%;
+      background:linear-gradient(135deg,#1E3160,#0D1B3E);
+      color:white;font-size:0.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;
+    }
     .topbar-right {
       display: flex;
       align-items: center;
@@ -776,11 +788,6 @@
     </button>
   </nav>
 
-  <div class="sidebar-bottom">
-    <button class="btn-logout" onclick="logout()">
-      <i class="fas fa-sign-out-alt"></i> Sign Out
-    </button>
-  </div>
 </aside>
 
 <div class="main-wrap">
@@ -788,8 +795,11 @@
   <header class="topbar">
     <div class="topbar-title" id="topbar-title">Dashboard</div>
     <div class="topbar-right">
-      <span id="topbar-user" style="font-size:0.82rem;color:var(--muted);"></span>
-      <span class="badge-role">Student</span>
+      <button class="topbar-profile-btn" onclick="openProfileModal()">
+        <div class="topbar-avatar-s" id="topbar-avatar-s" style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#1E3160,#0D1B3E);color:white;font-size:0.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">S</div>
+        <span id="topbar-user">Student</span>
+        <i class="fas fa-chevron-down" style="font-size:0.65rem;color:#5A6E8A;"></i>
+      </button>
     </div>
   </header>
 
@@ -1112,11 +1122,11 @@
     document.getElementById('sp-role').textContent = currentUser.role.charAt(0).toUpperCase()+currentUser.role.slice(1);
     document.getElementById('sp-id').textContent = currentUser.student_id || '—';
     document.getElementById('sp-since').textContent = currentUser.created_at ? new Date(currentUser.created_at).toLocaleDateString() : '—';
-    document.getElementById('studentProfileModal').style.display = 'flex';
+    document.getElementById('studentProfileModal').classList.add('open');
   }
 
   function closeProfileModal() {
-    document.getElementById('studentProfileModal').style.display = 'none';
+    document.getElementById('studentProfileModal').classList.remove('open');
   }
 
   function logout() {
@@ -1572,27 +1582,25 @@
 
 </script>
 
-<div id="studentProfileModal" style="display:none;position:fixed;inset:0;background:rgba(13,27,62,0.45);backdrop-filter:blur(3px);z-index:9999;align-items:center;justify-content:center;">
-  <div style="background:white;border-radius:16px;width:100%;max-width:360px;overflow:hidden;box-shadow:0 20px 60px rgba(13,27,62,0.22);">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid #C8D8EA;">
-      <span style="font-family:'Playfair Display',serif;font-size:1rem;color:#0D1B3E;">My Account</span>
-      <button onclick="closeProfileModal()" style="background:none;border:none;cursor:pointer;color:#5A6E8A;font-size:1rem;"><i class="fas fa-times"></i></button>
+<div class="modal-overlay" id="studentProfileModal">
+  <div class="modal-box" style="max-width:380px;">
+    <div class="modal-header">
+      <span class="modal-title">My Account</span>
+      <button class="modal-close" onclick="closeProfileModal()"><i class="fas fa-times"></i></button>
     </div>
-    <div style="padding:1.5rem 1.25rem;">
-      <div style="text-align:center;margin-bottom:1.25rem;">
-        <div id="sp-avatar" style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#1E3160,#0D1B3E);color:white;font-size:1.3rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 0.75rem;">S</div>
-        <div style="font-family:'Playfair Display',serif;font-size:1.05rem;color:#0D1B3E;" id="sp-name">Student</div>
+    <div class="modal-body">
+      <div style="text-align:center;padding:0.5rem 0 1rem;">
+        <div id="sp-avatar" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#1E3160,#0D1B3E);color:white;font-size:1.4rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 0.85rem;">S</div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.1rem;color:#0D1B3E;margin-bottom:0.2rem;" id="sp-name">Student</div>
         <div style="font-size:0.75rem;color:#5A6E8A;" id="sp-role">Student</div>
       </div>
-      <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid #C8D8EA;font-size:0.82rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:0.55rem 0;border-bottom:1px solid #C8D8EA;font-size:0.82rem;">
         <span style="color:#5A6E8A;font-weight:500;">Student ID</span><span id="sp-id">—</span>
       </div>
-      <div style="display:flex;justify-content:space-between;padding:0.5rem 0;font-size:0.82rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:0.55rem 0;font-size:0.82rem;">
         <span style="color:#5A6E8A;font-weight:500;">Member since</span><span id="sp-since">—</span>
       </div>
-      <button onclick="logout()" style="width:100%;margin-top:1.25rem;padding:0.6rem;background:#FDF3F2;border:1.5px solid #E8C4C0;border-radius:8px;color:#C0392B;font-family:'Outfit',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">
-        <i class="fas fa-sign-out-alt" style="margin-right:0.4rem;"></i>Log Out
-      </button>
+      <button onclick="logout()" style="width:100%;margin-top:1.25rem;padding:0.6rem;background:#FDF3F2;border:1.5px solid #E8C4C0;border-radius:8px;color:#C0392B;font-family:'Outfit',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;"><i class="fas fa-sign-out-alt" style="margin-right:0.4rem;"></i>Log Out</button>
     </div>
   </div>
 </div>
