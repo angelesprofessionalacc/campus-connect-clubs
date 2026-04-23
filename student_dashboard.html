@@ -899,6 +899,17 @@
     <button class="nav-link-item" onclick="showView('records', this)">
       <i class="fas fa-clipboard-list"></i> Activity Records
     </button>
+
+    <div class="nav-section-label officer-only" style="display:none;">Officer</div>
+    <button class="nav-link-item officer-only" style="display:none;" onclick="showView('my-club', this)">
+      <i class="fas fa-crown"></i> My Club
+    </button>
+    <button class="nav-link-item officer-only" style="display:none;" onclick="showView('applications-inbox', this)">
+      <i class="fas fa-inbox"></i> Applications
+    </button>
+    <button class="nav-link-item officer-only" style="display:none;" onclick="showView('club-request', this)">
+      <i class="fas fa-plus-circle"></i> Request Club
+    </button>
   </nav>
 
   <div class="sidebar-footer">
@@ -1110,6 +1121,198 @@
       </div>
     </div>
 
+    <div class="view" id="view-my-club">
+      <div class="page-heading">
+        <h1>My Club</h1>
+        <p>Manage events, announcements, and activities for your club.</p>
+      </div>
+      <div id="my-club-none" class="card-panel" style="display:none;">
+        <div class="card-panel-body">
+          <div class="empty-state">
+            <div class="empty-state-icon"><i class="fas fa-crown"></i></div>
+            <h4>No club assigned yet</h4>
+            <p>You haven't been assigned as officer of a club. Use <strong>Request Club</strong> to submit a request to the administrator.</p>
+          </div>
+        </div>
+      </div>
+      <div id="my-club-content" style="display:none;">
+        <div id="my-club-info-card" class="card-panel" style="margin-bottom:1.25rem;">
+          <div class="card-panel-header">
+            <h3 id="my-club-name">My Club</h3>
+            <span id="my-club-category" class="pill pill-member" style="font-size:0.68rem;"></span>
+          </div>
+          <div class="card-panel-body">
+            <p id="my-club-desc" style="font-size:0.82rem;color:var(--muted);margin-bottom:0.6rem;"></p>
+            <div style="display:flex;gap:1.5rem;font-size:0.78rem;color:var(--muted);">
+              <span><i class="fas fa-user-tie" style="margin-right:0.35rem;"></i><span id="my-club-adviser">—</span></span>
+              <span><i class="fas fa-map-marker-alt" style="margin-right:0.35rem;"></i><span id="my-club-location">—</span></span>
+              <span><i class="fas fa-users" style="margin-right:0.35rem;"></i><span id="my-club-members">0</span> members</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <div class="card-panel">
+              <div class="card-panel-header"><h3>Post Announcement</h3></div>
+              <div class="card-panel-body">
+                <div class="form-group">
+                  <label class="form-label">Title <span style="color:#E74C3C">*</span></label>
+                  <input class="form-control" id="officer-ann-title" type="text" placeholder="Announcement title">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Body <span style="color:#E74C3C">*</span></label>
+                  <textarea class="form-control" id="officer-ann-body" rows="3" placeholder="Write your announcement…" style="resize:vertical;"></textarea>
+                </div>
+                <button class="btn-submit-app" style="width:100%;margin-top:0.25rem;" onclick="officerPostAnnouncement()">Post Announcement</button>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <div class="card-panel">
+              <div class="card-panel-header"><h3>Add Event</h3></div>
+              <div class="card-panel-body">
+                <div class="form-group">
+                  <label class="form-label">Event Name <span style="color:#E74C3C">*</span></label>
+                  <input class="form-control" id="officer-evt-name" type="text" placeholder="Event name">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Date</label>
+                  <input class="form-control" id="officer-evt-date" type="date">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Location</label>
+                  <input class="form-control" id="officer-evt-location" type="text" placeholder="Venue / location">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Status</label>
+                  <select class="form-control" id="officer-evt-status">
+                    <option value="Upcoming">Upcoming</option>
+                    <option value="This Week">This Week</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+                </div>
+                <button class="btn-submit-app" style="width:100%;margin-top:0.25rem;" onclick="officerPostEvent()">Add Event</button>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <div class="card-panel">
+              <div class="card-panel-header"><h3>Log Activity</h3></div>
+              <div class="card-panel-body">
+                <div class="form-group">
+                  <label class="form-label">Activity Name <span style="color:#E74C3C">*</span></label>
+                  <input class="form-control" id="officer-act-name" type="text" placeholder="Activity name">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Type</label>
+                  <select class="form-control" id="officer-act-type">
+                    <option value="General">General</option>
+                    <option value="Community Service">Community Service</option>
+                    <option value="Workshop">Workshop</option>
+                    <option value="Competition">Competition</option>
+                    <option value="Meeting">Meeting</option>
+                    <option value="Fundraiser">Fundraiser</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Date</label>
+                  <input class="form-control" id="officer-act-date" type="date">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Status</label>
+                  <select class="form-control" id="officer-act-status">
+                    <option value="Planned">Planned</option>
+                    <option value="Ongoing">Ongoing</option>
+                    <option value="Completed">Completed</option>
+                  </select>
+                </div>
+                <button class="btn-submit-app" style="width:100%;margin-top:0.25rem;" onclick="officerPostActivity()">Log Activity</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="view-applications-inbox">
+      <div class="page-heading">
+        <h1>Applications</h1>
+        <p>Review student applications to your club.</p>
+      </div>
+      <div class="card-panel">
+        <div class="card-panel-body" style="padding:0;" id="applications-inbox-body">
+          <div class="empty-state" style="padding:2.5rem 1.5rem;">
+            <div class="empty-state-icon"><i class="fas fa-inbox"></i></div>
+            <h4>No applications yet</h4>
+            <p>Applications from students will appear here.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="view-club-request">
+      <div class="page-heading">
+        <h1>Request a Club</h1>
+        <p>Submit a proposal to the administrator to create a new club.</p>
+      </div>
+      <div class="row">
+        <div class="col-md-7">
+          <div class="card-panel">
+            <div class="card-panel-header"><h3>New Club Proposal</h3></div>
+            <div class="card-panel-body">
+              <div class="form-group">
+                <label class="form-label">Club Name <span style="color:#E74C3C">*</span></label>
+                <input class="form-control" id="req-club-name" type="text" placeholder="Proposed club name">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Category</label>
+                <select class="form-control" id="req-club-category">
+                  <option value="">Select category</option>
+                  <option value="STEM">STEM</option>
+                  <option value="Arts">Arts</option>
+                  <option value="Sports">Sports</option>
+                  <option value="Culture">Culture</option>
+                  <option value="Service">Service</option>
+                  <option value="General">General</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" id="req-club-desc" rows="3" placeholder="What is this club about?" style="resize:vertical;"></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Adviser Name</label>
+                <input class="form-control" id="req-club-adviser" type="text" placeholder="Faculty adviser (if any)">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Contact Email</label>
+                <input class="form-control" id="req-club-email" type="email" placeholder="Club contact email">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Meeting Location</label>
+                <input class="form-control" id="req-club-location" type="text" placeholder="Room / venue">
+              </div>
+              <button class="btn-submit-app" style="margin-top:0.5rem;" onclick="submitClubRequest()">Submit Proposal →</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-5">
+          <div class="card-panel">
+            <div class="card-panel-header"><h3>My Requests</h3></div>
+            <div class="card-panel-body" style="padding:0;" id="my-requests-list">
+              <div class="empty-state" style="padding:2rem 1rem;">
+                <div class="empty-state-icon" style="width:38px;height:38px;font-size:0.95rem;"><i class="fas fa-file-alt"></i></div>
+                <h4 style="font-size:0.9rem;">No requests yet</h4>
+                <p style="font-size:0.75rem;">Your submitted proposals will appear here.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
 </div>
@@ -1224,6 +1427,10 @@
             if (greetName) greetName.textContent = name;
             loadAllData();
             setupDate();
+            if (data.user.role === 'officer') {
+              document.querySelectorAll('.officer-only').forEach(el => el.style.display = '');
+              loadOfficerData();
+            }
           }
         } catch(innerErr) {
           console.log('[CCC] student inner error:', innerErr);
@@ -1246,7 +1453,8 @@
     const titles = {
       dashboard: 'Dashboard', directory: 'Club Directory',
       memberships: 'My Memberships', events: 'Event Schedule',
-      announcements: 'Announcements', records: 'Activity Records'
+      announcements: 'Announcements', records: 'Activity Records',
+      'my-club': 'My Club', 'applications-inbox': 'Applications', 'club-request': 'Request a Club'
     };
     const titleEl = document.getElementById('topbar-page-title');
     if (titleEl) titleEl.textContent = titles[id] || 'Dashboard';
@@ -1311,11 +1519,13 @@
         if (data.success && data.clubs) {
           clubs.length = 0;
           data.clubs.forEach(c => clubs.push({
+            id: c.id,
             name: c.name,
             category: c.category || 'General',
             desc: c.description || '',
             color: c.color || '#3b82f6',
             status: c.status,
+            officer_id: c.officer_id || null,
             applied: false,
             pending: false,
           }));
@@ -1456,10 +1666,12 @@
   }
 
   function submitApplication() {
-    const fullname = document.getElementById('app-fullname').value.trim();
-    const studentid = document.getElementById('app-studentid').value.trim();
-    const email = document.getElementById('app-email').value.trim();
-    const reason = document.getElementById('app-reason').value.trim();
+    const fullname   = document.getElementById('app-fullname').value.trim();
+    const studentid  = document.getElementById('app-studentid').value.trim();
+    const email      = document.getElementById('app-email').value.trim();
+    const reason     = document.getElementById('app-reason').value.trim();
+    const phone      = document.getElementById('app-phone').value.trim();
+    const leadership = document.getElementById('app-leadership').value;
 
     if (!fullname || !studentid || !email || !reason) {
       alert('Please fill in all required fields.');
@@ -1472,15 +1684,47 @@
       return;
     }
 
-    sessionApplied.add(selectedClubForApplication);
+    const club = clubs.find(c => c.name === selectedClubForApplication);
+    if (!club || !club.id) {
+      sessionApplied.add(selectedClubForApplication);
+      document.getElementById('application-form-body').style.display = 'none';
+      document.getElementById('application-success').style.display = '';
+      document.getElementById('application-footer').style.display = 'none';
+      document.getElementById('success-message').innerHTML =
+        `Your application to <strong>${selectedClubForApplication}</strong> has been submitted successfully.`;
+      renderClubs(clubs);
+      return;
+    }
 
-    document.getElementById('application-form-body').style.display = 'none';
-    document.getElementById('application-success').style.display = '';
-    document.getElementById('application-footer').style.display = 'none';
-    document.getElementById('success-message').innerHTML = 
-      `Your application to <strong>${selectedClubForApplication}</strong> has been submitted successfully. The club officer will review it and get back to you soon.`;
-
-    renderClubs(clubs);
+    fetch(`${API_BASE}api/applications?action=submit`, {
+      method: 'POST',
+      headers: authHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({
+        club_id:    club.id,
+        full_name:  fullname,
+        student_id: studentid,
+        email,
+        phone,
+        reason,
+        leadership,
+      })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          sessionApplied.add(selectedClubForApplication);
+          document.getElementById('application-form-body').style.display = 'none';
+          document.getElementById('application-success').style.display = '';
+          document.getElementById('application-footer').style.display = 'none';
+          document.getElementById('success-message').innerHTML =
+            `Your application to <strong>${selectedClubForApplication}</strong> has been submitted successfully. The club officer will review it and get back to you soon.`;
+          renderClubs(clubs);
+        } else {
+          alert(data.error || 'Failed to submit application.');
+        }
+      })
+      .catch(() => alert('Network error. Please try again.'));
   }
 
   document.getElementById('clubApplicationModal').addEventListener('click', function(e) {
@@ -1692,7 +1936,244 @@
   }
 
 
-  let activityRecords = [];
+  let myClub = null;
+
+  function loadOfficerData() {
+    fetch(`${API_BASE}api/clubs?action=list_my_clubs`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && data.clubs && data.clubs.length > 0) {
+          myClub = data.clubs[0];
+          renderMyClub();
+          loadApplicationsInbox();
+        } else {
+          document.getElementById('my-club-none').style.display = '';
+          document.getElementById('my-club-content').style.display = 'none';
+        }
+      })
+      .catch(() => {});
+
+    loadMyRequests();
+  }
+
+  function renderMyClub() {
+    if (!myClub) return;
+    document.getElementById('my-club-none').style.display = 'none';
+    document.getElementById('my-club-content').style.display = '';
+    document.getElementById('my-club-name').textContent     = myClub.name;
+    document.getElementById('my-club-category').textContent = myClub.category || '';
+    document.getElementById('my-club-desc').textContent     = myClub.description || '';
+    document.getElementById('my-club-adviser').textContent  = myClub.adviser || '—';
+    document.getElementById('my-club-location').textContent = myClub.location || '—';
+    document.getElementById('my-club-members').textContent  = myClub.member_count || 0;
+  }
+
+  function officerPostAnnouncement() {
+    if (!myClub) return alert('No club assigned.');
+    const title = document.getElementById('officer-ann-title').value.trim();
+    const body  = document.getElementById('officer-ann-body').value.trim();
+    if (!title || !body) return alert('Please fill in title and body.');
+    fetch(`${API_BASE}api/announcements?action=create`, {
+      method: 'POST',
+      headers: authHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({ title, body, club: myClub.name, status: 'Published' })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          document.getElementById('officer-ann-title').value = '';
+          document.getElementById('officer-ann-body').value  = '';
+          alert('Announcement posted successfully.');
+          loadAnnouncements();
+        } else {
+          alert(data.error || 'Failed to post announcement.');
+        }
+      })
+      .catch(() => alert('Network error.'));
+  }
+
+  function officerPostEvent() {
+    if (!myClub) return alert('No club assigned.');
+    const name     = document.getElementById('officer-evt-name').value.trim();
+    const date     = document.getElementById('officer-evt-date').value;
+    const location = document.getElementById('officer-evt-location').value.trim();
+    const status   = document.getElementById('officer-evt-status').value;
+    if (!name) return alert('Event name is required.');
+    fetch(`${API_BASE}api/events?action=create`, {
+      method: 'POST',
+      headers: authHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({ name, date, location, status, club: myClub.name })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          document.getElementById('officer-evt-name').value     = '';
+          document.getElementById('officer-evt-date').value     = '';
+          document.getElementById('officer-evt-location').value = '';
+          alert('Event added successfully.');
+          loadEvents();
+        } else {
+          alert(data.error || 'Failed to add event.');
+        }
+      })
+      .catch(() => alert('Network error.'));
+  }
+
+  function officerPostActivity() {
+    if (!myClub) return alert('No club assigned.');
+    const name          = document.getElementById('officer-act-name').value.trim();
+    const activity_type = document.getElementById('officer-act-type').value;
+    const date          = document.getElementById('officer-act-date').value;
+    const status        = document.getElementById('officer-act-status').value;
+    if (!name) return alert('Activity name is required.');
+    fetch(`${API_BASE}api/activities?action=create`, {
+      method: 'POST',
+      headers: authHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({ name, activity_type, date, status, club: myClub.name })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          document.getElementById('officer-act-name').value = '';
+          document.getElementById('officer-act-date').value = '';
+          alert('Activity logged successfully.');
+          loadActivities();
+        } else {
+          alert(data.error || 'Failed to log activity.');
+        }
+      })
+      .catch(() => alert('Network error.'));
+  }
+
+  function loadApplicationsInbox() {
+    if (!myClub) return;
+    fetch(`${API_BASE}api/applications?action=list_for_club&club_id=${myClub.id}`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) renderApplicationsInbox(data.applications);
+      })
+      .catch(() => {});
+  }
+
+  function renderApplicationsInbox(apps) {
+    const container = document.getElementById('applications-inbox-body');
+    if (!apps || apps.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state" style="padding:2.5rem 1.5rem;">
+          <div class="empty-state-icon"><i class="fas fa-inbox"></i></div>
+          <h4>No applications yet</h4>
+          <p>Applications from students will appear here.</p>
+        </div>`;
+      return;
+    }
+    const statusCls = { Pending: 'pill-pending', Accepted: 'pill-approved', Rejected: 'pill-past' };
+    container.innerHTML = `
+      <table class="event-table">
+        <thead><tr><th>Name</th><th>Student ID</th><th>Email</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody>
+          ${apps.map(a => `
+            <tr>
+              <td><strong>${escHtml(a.full_name)}</strong></td>
+              <td style="color:var(--muted);font-size:0.77rem;">${escHtml(a.student_id)}</td>
+              <td style="color:var(--muted);font-size:0.77rem;">${escHtml(a.email)}</td>
+              <td style="color:var(--muted);font-size:0.77rem;">${a.created_at ? new Date(a.created_at).toLocaleDateString() : '—'}</td>
+              <td><span class="pill ${statusCls[a.status] || 'pill-pending'}">${escHtml(a.status)}</span></td>
+              <td>
+                ${a.status === 'Pending' ? `
+                  <button onclick="reviewApplication(${a.id},'Accepted')" style="background:none;border:none;color:var(--green);font-size:0.8rem;cursor:pointer;margin-right:0.4rem;" title="Accept"><i class="fas fa-check"></i></button>
+                  <button onclick="reviewApplication(${a.id},'Rejected')" style="background:none;border:none;color:var(--red);font-size:0.8rem;cursor:pointer;" title="Reject"><i class="fas fa-times"></i></button>
+                ` : '—'}
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  function reviewApplication(id, status) {
+    fetch(`${API_BASE}api/applications?action=update_status`, {
+      method: 'POST',
+      headers: authHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({ id, status })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) loadApplicationsInbox();
+        else alert(data.error || 'Failed to update.');
+      })
+      .catch(() => alert('Network error.'));
+  }
+
+  function loadMyRequests() {
+    fetch(`${API_BASE}api/club_requests?action=my_requests`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) renderMyRequests(data.requests);
+      })
+      .catch(() => {});
+  }
+
+  function renderMyRequests(requests) {
+    const container = document.getElementById('my-requests-list');
+    if (!requests || requests.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state" style="padding:2rem 1rem;">
+          <div class="empty-state-icon" style="width:38px;height:38px;font-size:0.95rem;"><i class="fas fa-file-alt"></i></div>
+          <h4 style="font-size:0.9rem;">No requests yet</h4>
+          <p style="font-size:0.75rem;">Your submitted proposals will appear here.</p>
+        </div>`;
+      return;
+    }
+    const statusCls = { Pending: 'pill-pending', Approved: 'pill-approved', Rejected: 'pill-past' };
+    container.innerHTML = requests.map(r => `
+      <div style="padding:0.85rem 1.25rem;border-bottom:1px solid var(--border);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem;">
+          <strong style="font-size:0.85rem;">${escHtml(r.club_name)}</strong>
+          <span class="pill ${statusCls[r.status] || 'pill-pending'}">${escHtml(r.status)}</span>
+        </div>
+        <div style="font-size:0.72rem;color:var(--muted);">${r.category ? escHtml(r.category) + ' · ' : ''}${new Date(r.created_at).toLocaleDateString()}</div>
+        ${r.admin_note ? `<div style="font-size:0.72rem;color:var(--muted);margin-top:0.2rem;font-style:italic;">${escHtml(r.admin_note)}</div>` : ''}
+      </div>`).join('');
+  }
+
+  function submitClubRequest() {
+    const club_name   = document.getElementById('req-club-name').value.trim();
+    const category    = document.getElementById('req-club-category').value;
+    const description = document.getElementById('req-club-desc').value.trim();
+    const adviser     = document.getElementById('req-club-adviser').value.trim();
+    const email       = document.getElementById('req-club-email').value.trim();
+    const location    = document.getElementById('req-club-location').value.trim();
+    if (!club_name) return alert('Club name is required.');
+    fetch(`${API_BASE}api/club_requests?action=submit`, {
+      method: 'POST',
+      headers: authHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({ club_name, category, description, adviser, email, location })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          document.getElementById('req-club-name').value     = '';
+          document.getElementById('req-club-category').value = '';
+          document.getElementById('req-club-desc').value     = '';
+          document.getElementById('req-club-adviser').value  = '';
+          document.getElementById('req-club-email').value    = '';
+          document.getElementById('req-club-location').value = '';
+          alert('Club proposal submitted successfully. The administrator will review it.');
+          loadMyRequests();
+        } else {
+          alert(data.error || 'Failed to submit request.');
+        }
+      })
+      .catch(() => alert('Network error.'));
+  }
+
+
+
 
   const actRecordConfig = {
     ongoing:   { dotCls: 'ongoing',   cls: 'pill-upcoming', label: 'Ongoing'   },
