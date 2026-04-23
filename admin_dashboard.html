@@ -373,6 +373,47 @@
     }
     .tbl-action:hover { color: var(--navy); }
     .tbl-action.del:hover { color: var(--red); }
+    .member-count-btn {
+      background: none; border: 1px solid rgba(13,27,62,0.15); border-radius: 20px;
+      padding: 2px 10px; font-size: 0.75rem; color: var(--navy); cursor: pointer;
+      font-weight: 600; transition: background 0.15s, border-color 0.15s;
+    }
+    .member-count-btn:hover { background: rgba(13,27,62,0.06); border-color: var(--navy); }
+    .club-members-panel {
+      position: fixed; top: 0; right: -420px; width: 400px; height: 100vh;
+      background: var(--white); box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+      z-index: 1100; transition: right 0.28s cubic-bezier(0.4,0,0.2,1);
+      display: flex; flex-direction: column;
+    }
+    .club-members-panel.open { right: 0; }
+    .panel-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.22); z-index: 1099;
+      display: none; opacity: 0; transition: opacity 0.25s;
+    }
+    .panel-overlay.open { display: block; opacity: 1; }
+    .cmp-header {
+      padding: 1.2rem 1.4rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .cmp-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--ink); }
+    .cmp-subtitle { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
+    .cmp-close { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 1rem; padding: 4px; }
+    .cmp-close:hover { color: var(--red); }
+    .cmp-body { flex: 1; overflow-y: auto; padding: 1rem 1.2rem; }
+    .cmp-member-row {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.65rem 0; border-bottom: 1px solid var(--border);
+    }
+    .cmp-member-row:last-child { border-bottom: none; }
+    .cmp-avatar {
+      width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--navy-light), var(--navy));
+      color: white; font-size: 0.75rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cmp-name { font-weight: 600; font-size: 0.82rem; color: var(--ink); }
+    .cmp-meta { font-size: 0.7rem; color: var(--muted); margin-top: 1px; }
+    .cmp-joined { font-size: 0.68rem; color: var(--muted); margin-left: auto; white-space: nowrap; text-align: right; }
 
     .filter-bar { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
     .search-input {
@@ -1429,7 +1470,7 @@
       <tr>
         <td><div class="club-name-cell"><div class="club-avatar" style="background:linear-gradient(135deg,${club.color},${club.color}cc);">${club.name.charAt(0).toUpperCase()}</div><strong>${escHtml(club.name)}</strong></div></td>
         <td><span class="badge-cat bc-${club.category.toLowerCase()}">${escHtml(club.category)}</span></td>
-        <td>${club.member_count || 0}</td>
+        <td><button class="member-count-btn" onclick="openClubMembersModal(${club.id}, '${escHtml(club.name)}')">${club.member_count || 0} <i class="fas fa-users" style="font-size:0.65rem;margin-left:2px;opacity:0.6;"></i></button></td>
         <td><span class="badge-status bs-${club.status.toLowerCase()}">${escHtml(club.status)}</span></td>
         <td><button class="tbl-action" onclick="editClub(${club.id})"><i class="fas fa-edit"></i></button><button class="tbl-action del" onclick="confirmDelete('club', ${club.id}, '${escHtml(club.name)}')"><i class="fas fa-trash-alt"></i></button></td>
       </tr>
@@ -2249,8 +2290,13 @@
 
     const memberOf = allClubs.filter(c => c.members && c.members.some(m => m.user_id === userId));
     const leadsOf = allClubs.filter(c => c.leader_id === userId);
-    document.getElementById('ud-clubs').textContent = memberOf.length ? memberOf.map(c => c.name).join(', ') : '—';
-    document.getElementById('ud-leads').textContent = leadsOf.length ? leadsOf.map(c => c.name).join(', ') : '—';
+
+    const clubBadges = (list) => list.length
+      ? list.map(c => `<span style="display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,${c.color}22,${c.color}11);border:1px solid ${c.color}55;color:var(--ink);border-radius:20px;padding:2px 9px;font-size:0.7rem;font-weight:600;margin:2px;">${escHtml(c.name)}</span>`).join('')
+      : '<span style="color:var(--muted);font-size:0.78rem;">None</span>';
+
+    document.getElementById('ud-clubs').innerHTML = clubBadges(memberOf);
+    document.getElementById('ud-leads').innerHTML = clubBadges(leadsOf);
 
     document.getElementById('userDetailModal').classList.add('open');
   }
@@ -2690,8 +2736,8 @@
       <div class="profile-detail-row"><span class="profile-detail-label">Email</span><span id="ud-email">—</span></div>
       <div class="profile-detail-row"><span class="profile-detail-label">Student ID</span><span id="ud-studentid">—</span></div>
       <div class="profile-detail-row"><span class="profile-detail-label">Member Since</span><span id="ud-since">—</span></div>
-      <div class="profile-detail-row"><span class="profile-detail-label">Clubs</span><span id="ud-clubs" style="text-align:right;max-width:60%;">—</span></div>
-      <div class="profile-detail-row"><span class="profile-detail-label">Leads</span><span id="ud-leads" style="text-align:right;max-width:60%;">—</span></div>
+      <div class="profile-detail-row" style="align-items:flex-start;"><span class="profile-detail-label">Member Of</span><div id="ud-clubs" style="text-align:right;max-width:65%;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:2px;">—</div></div>
+      <div class="profile-detail-row" style="align-items:flex-start;"><span class="profile-detail-label">Leads</span><div id="ud-leads" style="text-align:right;max-width:65%;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:2px;">—</div></div>
     </div>
     <div class="modal-footer">
       <button class="btn-modal-next" onclick="closeUserDetailModal()">Close</button>
@@ -2840,5 +2886,64 @@
     </div>
   </div>
 </div>
+
+<div class="panel-overlay" id="clubMembersPanelOverlay" onclick="closeClubMembersModal()"></div>
+<div class="club-members-panel" id="clubMembersPanel">
+  <div class="cmp-header">
+    <div>
+      <div class="cmp-title" id="cmp-club-name">Club Members</div>
+      <div class="cmp-subtitle" id="cmp-member-count">0 members</div>
+    </div>
+    <button class="cmp-close" onclick="closeClubMembersModal()"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="cmp-body" id="cmp-body">
+    <div style="text-align:center;padding:2rem;color:var(--muted);font-size:0.82rem;">Loading…</div>
+  </div>
+</div>
+
+<script>
+  function openClubMembersModal(clubId, clubName) {
+    document.getElementById('cmp-club-name').textContent = clubName;
+    document.getElementById('cmp-member-count').textContent = 'Loading…';
+    document.getElementById('cmp-body').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:0.82rem;">Loading…</div>';
+    document.getElementById('clubMembersPanel').classList.add('open');
+    document.getElementById('clubMembersPanelOverlay').classList.add('open');
+
+    fetch(`${API_BASE}api/clubs?action=list_members&club_id=${clubId}`, {
+      credentials: 'include', headers: { 'X-Session-Token': getSessionToken() }
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (!data.success) { document.getElementById('cmp-body').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:0.82rem;">Could not load members.</div>'; return; }
+        const members = data.members || [];
+        document.getElementById('cmp-member-count').textContent = members.length + ' member' + (members.length !== 1 ? 's' : '');
+        if (members.length === 0) {
+          document.getElementById('cmp-body').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:0.82rem;">No members yet.</div>';
+          return;
+        }
+        document.getElementById('cmp-body').innerHTML = members.map(m => {
+          const fn = m.first_name || '';
+          const ln = m.last_name || '';
+          const initials = ((fn[0] || '') + (ln[0] || '')).toUpperCase() || '?';
+          const joined = m.joined_at ? new Date(m.joined_at).toLocaleDateString() : '—';
+          const roleLabel = m.role.charAt(0).toUpperCase() + m.role.slice(1);
+          return `<div class="cmp-member-row">
+            <div class="cmp-avatar">${escHtml(initials)}</div>
+            <div>
+              <div class="cmp-name">${escHtml((fn + ' ' + ln).trim() || '—')}</div>
+              <div class="cmp-meta">${escHtml(m.student_id || '—')} &middot; ${escHtml(roleLabel)}</div>
+            </div>
+            <div class="cmp-joined">Joined<br>${joined}</div>
+          </div>`;
+        }).join('');
+      })
+      .catch(() => { document.getElementById('cmp-body').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:0.82rem;">Network error.</div>'; });
+  }
+
+  function closeClubMembersModal() {
+    document.getElementById('clubMembersPanel').classList.remove('open');
+    document.getElementById('clubMembersPanelOverlay').classList.remove('open');
+  }
+</script>
 </body>
 </html>
