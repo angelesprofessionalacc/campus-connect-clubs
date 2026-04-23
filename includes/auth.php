@@ -73,7 +73,7 @@ class AuthManager {
     }
 
     public function loginStudent($studentId, $password) {
-        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE student_id = ? AND role = 'student' LIMIT 1");
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE student_id = ? AND (role = 'student' OR role = 'officer') LIMIT 1");
         $stmt->execute([$studentId]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
