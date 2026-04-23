@@ -578,6 +578,10 @@
     <a onclick="showSection('announcements', this)">
       <i class="fas fa-bullhorn"></i> Announcements
     </a>
+    <div class="nav-section-label">Members</div>
+    <a onclick="showSection('applications', this)">
+      <i class="fas fa-file-alt"></i> Club Applications <span id="apps-badge" style="display:none;background:#E74C3C;color:#fff;font-size:0.68rem;padding:1px 6px;border-radius:99px;margin-left:4px;"></span>
+    </a>
   </nav>
 
   <div class="sidebar-footer">
@@ -830,6 +834,34 @@
         </div>
       </div>
 
+    </div>
+
+    <div class="page-section" id="section-applications">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Club Applications</span>
+          <div class="filter-bar">
+            <input class="search-input" type="text" placeholder="Search by name or club…" id="apps-search" oninput="filterApplicationsTable()">
+            <select class="filter-select" id="apps-status-filter" onchange="filterApplicationsTable()">
+              <option value="">All Status</option>
+              <option value="Pending">Pending</option>
+              <option value="Accepted">Accepted</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table" id="apps-table">
+            <thead><tr><th>Applicant</th><th>Student ID</th><th>Club</th><th>Reason</th><th>Date</th><th>Status</th><th></th></tr></thead>
+            <tbody id="apps-tbody">
+              <tr><td colspan="7" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel-footer">
+          <span id="apps-count">Showing 0 applications</span>
+        </div>
+      </div>
     </div>
 
   </main>
@@ -1195,6 +1227,80 @@
     loadEvents();
     loadActivities();
     loadAnnouncements();
+    loadApplications();
+  }
+
+  let allApplications = [];
+
+  function loadApplications() {
+    fetch(`${API_BASE}api/applications?action=list_all`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          allApplications = data.applications || [];
+          renderApplicationsTable(allApplications);
+          const pending = allApplications.filter(a => a.status === 'Pending').length;
+          const badge = document.getElementById('apps-badge');
+          if (badge) {
+            if (pending > 0) { badge.textContent = pending; badge.style.display = ''; }
+            else badge.style.display = 'none';
+          }
+        }
+      })
+      .catch(() => {});
+  }
+
+  function renderApplicationsTable(list) {
+    const tbody = document.getElementById('apps-tbody');
+    const countEl = document.getElementById('apps-count');
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">No applications found</td></tr>';
+      if (countEl) countEl.textContent = 'Showing 0 applications';
+      return;
+    }
+    const statusColor = { Pending: '#f59e0b', Accepted: '#22c55e', Rejected: '#ef4444' };
+    tbody.innerHTML = list.map(a => `
+      <tr data-id="${a.id}">
+        <td>${escHtml(a.full_name)}</td>
+        <td>${escHtml(a.student_id)}</td>
+        <td>${escHtml(a.club_name || '—')}</td>
+        <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escHtml(a.reason||'')}">${escHtml(a.reason || '—')}</td>
+        <td>${a.created_at ? new Date(a.created_at).toLocaleDateString() : '—'}</td>
+        <td><span style="font-size:0.75rem;font-weight:600;color:${statusColor[a.status]||'#64748b'}">${escHtml(a.status)}</span></td>
+        <td style="white-space:nowrap;">
+          ${a.status === 'Pending' ? `
+            <button class="btn-sm primary" style="margin-right:4px;" onclick="updateAppStatus(${a.id},'Accepted')">Accept</button>
+            <button class="btn-sm" style="background:#fee2e2;color:#ef4444;border:none;" onclick="updateAppStatus(${a.id},'Rejected')">Reject</button>
+          ` : `<button class="btn-sm" onclick="updateAppStatus(${a.id},'Pending')">Reset</button>`}
+        </td>
+      </tr>
+    `).join('');
+    if (countEl) countEl.textContent = `Showing ${list.length} application${list.length !== 1 ? 's' : ''}`;
+  }
+
+  function escHtml(str) {
+    return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function filterApplicationsTable() {
+    const q = (document.getElementById('apps-search').value || '').toLowerCase();
+    const s = document.getElementById('apps-status-filter').value;
+    const filtered = allApplications.filter(a => {
+      const matchQ = !q || a.full_name.toLowerCase().includes(q) || (a.club_name||'').toLowerCase().includes(q) || (a.student_id||'').toLowerCase().includes(q);
+      const matchS = !s || a.status === s;
+      return matchQ && matchS;
+    });
+    renderApplicationsTable(filtered);
+  }
+
+  function updateAppStatus(id, status) {
+    fetch(`${API_BASE}api/applications?action=update_status`, {
+      method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-Session-Token': getSessionToken() },
+      body: JSON.stringify({ id, status })
+    })
+      .then(r => r.json())
+      .then(data => { if (data.success) loadApplications(); else alert(data.error || 'Failed to update'); })
+      .catch(() => alert('Network error'));
   }
 
   function loadClubs() {
