@@ -27,6 +27,14 @@ function getSessionUser($pdo) {
     return $stmt->fetch();
 }
 
+$pdo->exec("CREATE TABLE IF NOT EXISTS club_members (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    club_id INT NOT NULL,
+    user_id INT NOT NULL,
+    joined_at DATETIME DEFAULT NOW(),
+    UNIQUE KEY unique_membership (club_id, user_id)
+)");
+
 $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';
 
@@ -44,7 +52,36 @@ if (!$isAdmin && $method !== 'GET') {
 
 if ($method === 'GET' && $action === 'list') {
     $stmt = $pdo->query("SELECT c.*, COUNT(m.id) as member_count FROM clubs c LEFT JOIN club_members m ON c.id = m.club_id GROUP BY c.id ORDER BY c.name ASC");
-    echo json_encode(['success' => true, 'clubs' => $stmt->fetchAll()]);
+    $clubs = $stmt->fetchAll();
+    $memberStmt = $pdo->query("SELECT club_id, user_id FROM club_members");
+    $memberRows = $memberStmt->fetchAll();
+    $membersMap = [];
+    foreach ($memberRows as $row) {
+        $membersMap[$row['club_id']][] = ['user_id' => (int)$row['user_id']];
+    }
+    foreach ($clubs as &$club) {
+        $club['members'] = $membersMap[$club['id']] ?? [];
+    }
+    echo json_encode(['success' => true, 'clubs' => $clubs]);
+
+} elseif ($method === 'GET' && $action === 'list_members') {
+    if (!$isAdmin) {
+        echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+        exit;
+    }
+    $clubId = $_GET['club_id'] ?? null;
+    if (!$clubId) {
+        echo json_encode(['success' => false, 'error' => 'Missing club_id']);
+        exit;
+    }
+    $stmt = $pdo->prepare("SELECT u.id, u.first_name, u.last_name, u.student_id, u.role, m.joined_at FROM club_members m JOIN users u ON m.user_id = u.id WHERE m.club_id = ? ORDER BY m.joined_at ASC");
+    $stmt->execute([$clubId]);
+    echo json_encode(['success' => true, 'members' => $stmt->fetchAll()]);
+
+} elseif ($method === 'GET' && $action === 'my_memberships') {
+    $stmt = $pdo->prepare("SELECT c.id, c.name, c.category, c.color, c.description, c.status, m.joined_at FROM club_members m JOIN clubs c ON m.club_id = c.id WHERE m.user_id = ? ORDER BY m.joined_at DESC");
+    $stmt->execute([$user['id']]);
+    echo json_encode(['success' => true, 'memberships' => $stmt->fetchAll()]);
 
 } elseif ($method === 'GET' && $action === 'list_my_clubs') {
     if ($user['role'] !== 'officer' && $user['role'] !== 'admin') {
