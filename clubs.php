@@ -118,7 +118,8 @@ if ($method === 'GET' && $action === 'list') {
 
 } elseif ($method === 'POST' && $action === 'update') {
     $data = json_decode(file_get_contents('php://input'), true);
-    $stmt = $pdo->prepare("UPDATE clubs SET name=?, category=?, status=?, adviser=?, email=?, description=?, location=? WHERE id=?");
+    $officerId = isset($data['officer_id']) ? ($data['officer_id'] ?: null) : null;
+    $stmt = $pdo->prepare("UPDATE clubs SET name=?, category=?, status=?, adviser=?, email=?, description=?, location=?, officer_id=? WHERE id=?");
     $stmt->execute([
         $data['name'] ?? '',
         $data['category'] ?? '',
@@ -127,6 +128,7 @@ if ($method === 'GET' && $action === 'list') {
         $data['email'] ?? '',
         $data['description'] ?? '',
         $data['location'] ?? '',
+        $officerId,
         $data['id'],
     ]);
     echo json_encode(['success' => true]);
