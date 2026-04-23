@@ -19,11 +19,13 @@ $authRoutes = [
 ];
 
 $resourceRoutes = [
-    '/api/clubs'         => 'clubs.php',
-    '/api/events'        => 'events.php',
-    '/api/users'         => 'users.php',
-    '/api/activities'    => 'activities.php',
-    '/api/announcements' => 'announcements.php',
+    '/api/clubs'          => 'clubs.php',
+    '/api/events'         => 'events.php',
+    '/api/users'          => 'users.php',
+    '/api/activities'     => 'activities.php',
+    '/api/announcements'  => 'announcements.php',
+    '/api/applications'   => 'applications.php',
+    '/api/club_requests'  => 'club_requests.php',
 ];
 
 if (isset($authRoutes[$uri])) {
