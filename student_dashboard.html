@@ -944,6 +944,13 @@
 
       <div class="stat-cards">
         <div class="stat-card">
+          <div class="stat-icon si-green"><i class="fas fa-id-badge"></i></div>
+          <div class="stat-body">
+            <div class="stat-value" id="dash-stat-members">0</div>
+            <div class="stat-label">My Clubs</div>
+          </div>
+        </div>
+        <div class="stat-card">
           <div class="stat-icon si-blue"><i class="fas fa-layer-group"></i></div>
           <div class="stat-body">
             <div class="stat-value" id="dash-stat-clubs">0</div>
@@ -1514,6 +1521,7 @@
   }
 
   let myApplications = [];
+  let myMemberships = [];
 
   function loadMyApplications() {
     fetch(`${API_BASE}api/applications?action=list_my`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
@@ -1521,10 +1529,38 @@
       .then(data => {
         if (data.success) {
           myApplications = data.applications || [];
-          renderMemberships();
+          loadMyMemberships();
         }
       })
       .catch(() => {});
+  }
+
+  function loadMyMemberships() {
+    fetch(`${API_BASE}api/clubs?action=my_memberships`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          myMemberships = data.memberships || [];
+        }
+        renderMemberships();
+        applyMembershipStatesToClubs();
+      })
+      .catch(() => { renderMemberships(); applyMembershipStatesToClubs(); });
+  }
+
+  function applyMembershipStatesToClubs() {
+    const memberClubIds = new Set(myMemberships.map(m => m.id));
+    const pendingClubIds = new Set(
+      myApplications.filter(a => a.status === 'Pending').map(a => a.club_id)
+    );
+    clubs.forEach(c => {
+      c.member = memberClubIds.has(c.id);
+      c.pending = pendingClubIds.has(c.id);
+      c.applied = c.member;
+    });
+    renderClubs(clubs);
+    const memberEl = document.getElementById('dash-stat-members');
+    if (memberEl) memberEl.textContent = myMemberships.length;
   }
 
   function loadClubs() {
@@ -1540,11 +1576,13 @@
             desc: c.description || '',
             color: c.color || '#3b82f6',
             status: c.status,
+            member_count: c.member_count || 0,
             officer_id: c.officer_id || null,
             applied: false,
             pending: false,
+            member: false,
           }));
-          renderClubs(clubs);
+          applyMembershipStatesToClubs();
           document.getElementById('dash-stat-clubs') && (document.getElementById('dash-stat-clubs').textContent = clubs.length);
         }
       })
@@ -1640,10 +1678,11 @@
           <div class="club-card-badge">${c.category}</div>
           <h4>${c.name}</h4>
           <p>${c.desc}</p>
-          ${c.pending || appliedThisSession
-            ? '<button class="btn-apply btn-applied" disabled>Application Pending</button>'
-            : c.applied
-              ? '<button class="btn-apply btn-applied" disabled>Member</button>'
+          <div style="font-size:0.7rem;color:var(--muted);margin-bottom:0.5rem;"><i class="fas fa-users" style="margin-right:3px;opacity:0.6;"></i>${c.member_count || 0} member${c.member_count !== 1 ? 's' : ''}</div>
+          ${c.member
+            ? '<button class="btn-apply btn-applied" disabled><i class="fas fa-check-circle" style="margin-right:5px;"></i>Member</button>'
+            : c.pending || appliedThisSession
+              ? '<button class="btn-apply btn-applied" disabled>Application Pending</button>'
               : `<button class="btn-apply" onclick="openApplicationModal('${c.name}')">Apply to Join</button>`
           }
         </div>
@@ -1734,7 +1773,7 @@
           document.getElementById('application-footer').style.display = 'none';
           document.getElementById('success-message').innerHTML =
             `Your application to <strong>${selectedClubForApplication}</strong> has been submitted successfully. The club officer will review it and get back to you soon.`;
-          renderClubs(clubs);
+          loadMyApplications();
         } else {
           alert(data.error || 'Failed to submit application.');
         }
@@ -1748,11 +1787,16 @@
 
   function renderMemberships() {
     const container = document.getElementById('memberships-list');
-    if (!myApplications || myApplications.length === 0) {
+
+    const activeClubIds = new Set(myMemberships.map(m => m.id));
+    const pendingApps = myApplications.filter(a => a.status === 'Pending' && !activeClubIds.has(a.club_id));
+    const otherApps = myApplications.filter(a => a.status !== 'Pending' || activeClubIds.has(a.club_id));
+
+    if (myMemberships.length === 0 && myApplications.length === 0) {
       container.innerHTML = `
         <div class="empty-state">
           <div class="empty-state-icon"><i class="fas fa-id-badge"></i></div>
-          <h4>No applications yet</h4>
+          <h4>No memberships yet</h4>
           <p>You haven't applied to any clubs. Head to the Club Directory to explore and apply.</p>
           <button class="btn-apply" onclick="showView('directory', document.querySelector('[onclick*=directory]'))" style="display:inline-block;padding:0.45rem 1.2rem;width:auto;margin-top:0.5rem;">
             <i class="fas fa-layer-group" style="margin-right:0.4rem;"></i>Browse Clubs
@@ -1762,25 +1806,61 @@
       return;
     }
 
-    const statusConfig = {
-      'Pending':  { label: 'Pending',  cls: 'pill-pending'  },
-      'Accepted': { label: 'Accepted', cls: 'pill-approved' },
-      'Rejected': { label: 'Rejected', cls: 'pill-past'     },
-    };
+    let html = '';
 
-    container.innerHTML = myApplications.map(a => {
-      const cfg = statusConfig[a.status] || { label: a.status, cls: 'pill-member' };
-      const date = a.created_at ? new Date(a.created_at).toLocaleDateString() : '—';
-      return `
-        <div class="membership-item">
-          <div class="membership-info">
-            <h5>${a.club_name || 'Unknown Club'}</h5>
-            <p>Applied ${date}</p>
+    if (myMemberships.length > 0) {
+      html += `<div style="font-size:0.7rem;font-weight:700;color:var(--muted);letter-spacing:0.07em;text-transform:uppercase;padding:0.6rem 0 0.3rem;">Active Memberships</div>`;
+      html += myMemberships.map(m => {
+        const joined = m.joined_at ? new Date(m.joined_at).toLocaleDateString() : '—';
+        return `
+          <div class="membership-item">
+            <div style="display:flex;align-items:center;gap:0.65rem;">
+              <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,${m.color || '#3b82f6'},${m.color || '#3b82f6'}99);display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.75rem;font-weight:700;flex-shrink:0;">${(m.name||'?')[0].toUpperCase()}</div>
+              <div class="membership-info">
+                <h5>${escHtml(m.name || 'Unknown Club')}</h5>
+                <p>Joined ${joined} &middot; ${escHtml(m.category || '')}</p>
+              </div>
+            </div>
+            <span class="pill pill-approved"><i class="fas fa-check-circle" style="margin-right:3px;"></i>Member</span>
           </div>
-          <span class="pill ${cfg.cls}">${cfg.label}</span>
-        </div>
-      `;
-    }).join('');
+        `;
+      }).join('');
+    }
+
+    if (pendingApps.length > 0) {
+      html += `<div style="font-size:0.7rem;font-weight:700;color:var(--muted);letter-spacing:0.07em;text-transform:uppercase;padding:0.85rem 0 0.3rem;">Pending Applications</div>`;
+      html += pendingApps.map(a => {
+        const date = a.created_at ? new Date(a.created_at).toLocaleDateString() : '—';
+        return `
+          <div class="membership-item">
+            <div class="membership-info">
+              <h5>${escHtml(a.club_name || 'Unknown Club')}</h5>
+              <p>Applied ${date}</p>
+            </div>
+            <span class="pill pill-pending">Pending</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    const rejectedApps = myApplications.filter(a => a.status === 'Rejected');
+    if (rejectedApps.length > 0) {
+      html += `<div style="font-size:0.7rem;font-weight:700;color:var(--muted);letter-spacing:0.07em;text-transform:uppercase;padding:0.85rem 0 0.3rem;">Past Applications</div>`;
+      html += rejectedApps.map(a => {
+        const date = a.created_at ? new Date(a.created_at).toLocaleDateString() : '—';
+        return `
+          <div class="membership-item">
+            <div class="membership-info">
+              <h5>${escHtml(a.club_name || 'Unknown Club')}</h5>
+              <p>Applied ${date}</p>
+            </div>
+            <span class="pill pill-past">Rejected</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    container.innerHTML = html;
   }
 
 
