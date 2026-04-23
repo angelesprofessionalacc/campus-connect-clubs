@@ -1418,8 +1418,8 @@
       const actionButtons = user.role === 'admin'
         ? `<td style="display:flex;gap:0.3rem;"><button class="tbl-action" onclick="viewUserDetails(${user.id})"><i class="fas fa-eye"></i></button></td>`
         : user.role === 'officer'
-        ? `<td style="display:flex;gap:0.3rem;"><button class="tbl-action" onclick="viewUserDetails(${user.id})"><i class="fas fa-eye"></i></button><button class="tbl-action" onclick="openRemoveOfficerModal(${user.id}, '${fullName}')"><i class="fas fa-arrow-down"></i> Demote</button><button class="tbl-action del" onclick="confirmDelete('user', ${user.id}, '${fullName}')"><i class="fas fa-trash-alt"></i></button></td>`
-        : `<td style="display:flex;gap:0.3rem;"><button class="tbl-action" onclick="viewUserDetails(${user.id})"><i class="fas fa-eye"></i></button><button class="tbl-action" onclick="openMakeOfficerModal(${user.id}, '${fullName}')"><i class="fas fa-arrow-up"></i> Promote</button><button class="tbl-action del" onclick="confirmDelete('user', ${user.id}, '${fullName}')"><i class="fas fa-trash-alt"></i></button></td>`;
+        ? `<td style="display:flex;gap:0.3rem;"><button class="tbl-action" onclick="viewUserDetails(${user.id})"><i class="fas fa-eye"></i></button><button class="tbl-action" onclick="openResetPasswordModal(${user.id}, '${fullName}')"><i class="fas fa-key"></i></button><button class="tbl-action" onclick="openRemoveOfficerModal(${user.id}, '${fullName}')"><i class="fas fa-arrow-down"></i> Demote</button><button class="tbl-action del" onclick="confirmDelete('user', ${user.id}, '${fullName}')"><i class="fas fa-trash-alt"></i></button></td>`
+        : `<td style="display:flex;gap:0.3rem;"><button class="tbl-action" onclick="viewUserDetails(${user.id})"><i class="fas fa-eye"></i></button><button class="tbl-action" onclick="openResetPasswordModal(${user.id}, '${fullName}')"><i class="fas fa-key"></i></button><button class="tbl-action" onclick="openMakeOfficerModal(${user.id}, '${fullName}')"><i class="fas fa-arrow-up"></i> Promote</button><button class="tbl-action del" onclick="confirmDelete('user', ${user.id}, '${fullName}')"><i class="fas fa-trash-alt"></i></button></td>`;
 
       return `
         <tr>
@@ -2374,6 +2374,90 @@
       });
   }
 
+  let resetPasswordUserId = null;
+
+  function openResetPasswordModal(userId, userName) {
+    resetPasswordUserId = userId;
+    document.getElementById('reset-pw-name').textContent = userName;
+    document.getElementById('reset-pw-input').value = '';
+    document.getElementById('reset-pw-confirm').value = '';
+    document.getElementById('reset-pw-error').style.display = 'none';
+    document.getElementById('reset-pw-error').textContent = '';
+    document.getElementById('reset-pw-btn').disabled = false;
+    document.getElementById('reset-pw-btn').textContent = 'Reset Password ✓';
+    document.getElementById('resetPasswordModal').classList.add('open');
+  }
+
+  function closeResetPasswordModal() {
+    document.getElementById('resetPasswordModal').classList.remove('open');
+    resetPasswordUserId = null;
+  }
+
+  document.getElementById('resetPasswordModal').addEventListener('click', function(e) {
+    if (e.target === this) closeResetPasswordModal();
+  });
+
+  function toggleResetPwVisibility() {
+    const input = document.getElementById('reset-pw-input');
+    const eye   = document.getElementById('reset-pw-eye');
+    if (input.type === 'password') {
+      input.type = 'text';
+      eye.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+      input.type = 'password';
+      eye.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+  }
+
+  function submitResetPassword() {
+    const pass    = document.getElementById('reset-pw-input').value;
+    const confirm = document.getElementById('reset-pw-confirm').value;
+    const errEl   = document.getElementById('reset-pw-error');
+    const btn     = document.getElementById('reset-pw-btn');
+
+    errEl.style.display = 'none';
+    errEl.textContent = '';
+
+    if (pass.length < 6) {
+      errEl.textContent = 'Password must be at least 6 characters.';
+      errEl.style.display = '';
+      return;
+    }
+    if (pass !== confirm) {
+      errEl.textContent = 'Passwords do not match.';
+      errEl.style.display = '';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Resetting…';
+
+    fetch(`${API_BASE}api/users?action=reset_password`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'X-Session-Token': getSessionToken() },
+      body: JSON.stringify({ id: resetPasswordUserId, password: pass })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          closeResetPasswordModal();
+          alert('Password reset successfully.');
+        } else {
+          btn.disabled = false;
+          btn.textContent = 'Reset Password ✓';
+          errEl.textContent = data.error || 'Failed to reset password.';
+          errEl.style.display = '';
+        }
+      })
+      .catch(() => {
+        btn.disabled = false;
+        btn.textContent = 'Reset Password ✓';
+        errEl.textContent = 'Network error. Please try again.';
+        errEl.style.display = '';
+      });
+  }
+
   function openMakeOfficerModal(userId, userName) {
     selectedUserForOfficer = userId;
     document.getElementById('officer-student-name').textContent = userName;
@@ -2721,6 +2805,37 @@
     <div class="modal-footer">
       <button class="btn-modal-back" onclick="closeEditAnnouncementModal()">Cancel</button>
       <button class="btn-modal-next gold" onclick="submitEditAnnouncement()">Save Changes ✓</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="resetPasswordModal">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header">
+      <span class="modal-title">Reset Password</span>
+      <button class="modal-close" onclick="closeResetPasswordModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.2rem;line-height:1.55;">
+        Set a new password for <strong id="reset-pw-name"></strong>. The user will need to use this new password on their next login.
+      </p>
+      <div class="form-group">
+        <label class="form-label">New Password <span style="color:var(--red)">*</span></label>
+        <div style="position:relative;">
+          <input class="form-control-ccc" id="reset-pw-input" type="password" placeholder="Min. 6 characters" style="padding-right:2.5rem;">
+          <button type="button" onclick="toggleResetPwVisibility()" style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:0;" tabindex="-1">
+            <i class="fas fa-eye" id="reset-pw-eye"></i>
+          </button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm Password <span style="color:var(--red)">*</span></label>
+        <input class="form-control-ccc" id="reset-pw-confirm" type="password" placeholder="Re-enter password">
+      </div>
+      <div id="reset-pw-error" style="display:none;font-size:0.78rem;color:var(--red);margin-top:0.25rem;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-back" onclick="closeResetPasswordModal()">Cancel</button>
+      <button class="btn-modal-next gold" id="reset-pw-btn" onclick="submitResetPassword()">Reset Password ✓</button>
     </div>
   </div>
 </div>
