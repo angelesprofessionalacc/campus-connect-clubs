@@ -101,11 +101,12 @@ class AuthManager {
         ];
     }
 
-    public function storeSession($sessionId, $userId) {
-        $stmt = $this->pdo->prepare("INSERT INTO sessions (session_id, user_id, created_at) VALUES (?, ?, NOW())");
-        $stmt->execute([$sessionId, $userId]);
-    }
-
+public function storeSession($sessionId, $userId) {
+    $stmt = $this->pdo->prepare("DELETE FROM sessions WHERE user_id = ?");
+    $stmt->execute([$userId]);
+    $stmt = $this->pdo->prepare("INSERT INTO sessions (session_id, user_id, created_at) VALUES (?, ?, NOW())");
+    $stmt->execute([$sessionId, $userId]);
+}
     public function validateSession($sessionId) {
         $stmt = $this->pdo->prepare("SELECT user_id FROM sessions WHERE session_id = ? LIMIT 1");
         $stmt->execute([$sessionId]);
