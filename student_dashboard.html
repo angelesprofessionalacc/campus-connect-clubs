@@ -1510,6 +1510,21 @@
     loadEvents();
     loadAnnouncements();
     loadActivities();
+    loadMyApplications();
+  }
+
+  let myApplications = [];
+
+  function loadMyApplications() {
+    fetch(`${API_BASE}api/applications?action=list_my`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          myApplications = data.applications || [];
+          renderMemberships();
+        }
+      })
+      .catch(() => {});
   }
 
   function loadClubs() {
@@ -1731,16 +1746,14 @@
     if (e.target === this) closeApplicationModal();
   });
 
-  let memberships = [];
-
   function renderMemberships() {
     const container = document.getElementById('memberships-list');
-    if (memberships.length === 0) {
+    if (!myApplications || myApplications.length === 0) {
       container.innerHTML = `
         <div class="empty-state">
           <div class="empty-state-icon"><i class="fas fa-id-badge"></i></div>
-          <h4>No memberships yet</h4>
-          <p>You haven't joined or applied to any clubs. Head to the Club Directory to explore and apply.</p>
+          <h4>No applications yet</h4>
+          <p>You haven't applied to any clubs. Head to the Club Directory to explore and apply.</p>
           <button class="btn-apply" onclick="showView('directory', document.querySelector('[onclick*=directory]'))" style="display:inline-block;padding:0.45rem 1.2rem;width:auto;margin-top:0.5rem;">
             <i class="fas fa-layer-group" style="margin-right:0.4rem;"></i>Browse Clubs
           </button>
@@ -1750,18 +1763,19 @@
     }
 
     const statusConfig = {
-      member:  { label: 'Member',  cls: 'pill-member'  },
-      active:  { label: 'Active',  cls: 'pill-approved' },
-      pending: { label: 'Pending', cls: 'pill-pending'  },
+      'Pending':  { label: 'Pending',  cls: 'pill-pending'  },
+      'Accepted': { label: 'Accepted', cls: 'pill-approved' },
+      'Rejected': { label: 'Rejected', cls: 'pill-past'     },
     };
 
-    container.innerHTML = memberships.map(m => {
-      const cfg = statusConfig[m.status] || { label: m.status, cls: 'pill-member' };
+    container.innerHTML = myApplications.map(a => {
+      const cfg = statusConfig[a.status] || { label: a.status, cls: 'pill-member' };
+      const date = a.created_at ? new Date(a.created_at).toLocaleDateString() : '—';
       return `
         <div class="membership-item">
           <div class="membership-info">
-            <h5>${m.name}</h5>
-            <p>${m.detail} · ${m.category}</p>
+            <h5>${a.club_name || 'Unknown Club'}</h5>
+            <p>Applied ${date}</p>
           </div>
           <span class="pill ${cfg.cls}">${cfg.label}</span>
         </div>
