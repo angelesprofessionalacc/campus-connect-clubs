@@ -91,28 +91,6 @@ if ($method === 'GET' && $action === 'list') {
     $stmt->execute([$id]);
     echo json_encode(['success' => true]);
 
-} elseif ($method === 'POST' && $action === 'reset_password') {
-    $data = json_decode(file_get_contents('php://input'), true);
-    $id   = $data['id']       ?? '';
-    $pass = $data['password'] ?? '';
-
-    if (!$id || strlen($pass) < 6) {
-        echo json_encode(['success' => false, 'error' => 'Password must be at least 6 characters']);
-        exit;
-    }
-
-    $check = $pdo->prepare("SELECT role FROM users WHERE id = ? LIMIT 1");
-    $check->execute([$id]);
-    $row = $check->fetch();
-    if (!$row || $row['role'] === 'admin') {
-        echo json_encode(['success' => false, 'error' => 'Cannot reset password for this account']);
-        exit;
-    }
-
-    $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
-    $stmt->execute([password_hash($pass, PASSWORD_DEFAULT), $id]);
-    echo json_encode(['success' => true]);
-
 } elseif ($method === 'GET' && $action === 'lookup') {
     $studentId = $_GET['student_id'] ?? '';
     if (empty($studentId)) {
