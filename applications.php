@@ -19,7 +19,13 @@ try {
     exit;
 }
 
-$pdo->exec("CREATE TABLE IF NOT EXISTS club_applications (
+$pdo->exec("CREATE TABLE IF NOT EXISTS club_members (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    club_id INT NOT NULL,
+    user_id INT NOT NULL,
+    joined_at DATETIME DEFAULT NOW(),
+    UNIQUE KEY unique_membership (club_id, user_id)
+)");
     id INT AUTO_INCREMENT PRIMARY KEY,
     club_id INT NOT NULL,
     full_name VARCHAR(255) NOT NULL,
@@ -134,6 +140,17 @@ if ($method === 'POST' && $action === 'submit') {
     }
     $stmt = $pdo->prepare("UPDATE club_applications SET status = ? WHERE id = ?");
     $stmt->execute([$status, $appId]);
+
+    if ($status === 'Accepted') {
+        $appRow = $pdo->prepare("SELECT ca.club_id, u.id as user_id FROM club_applications ca JOIN users u ON u.student_id = ca.student_id WHERE ca.id = ? LIMIT 1");
+        $appRow->execute([$appId]);
+        $row = $appRow->fetch();
+        if ($row && $row['user_id']) {
+            $ins = $pdo->prepare("INSERT IGNORE INTO club_members (club_id, user_id, joined_at) VALUES (?, ?, NOW())");
+            $ins->execute([$row['club_id'], $row['user_id']]);
+        }
+    }
+
     echo json_encode(['success' => true]);
 
 } else {
