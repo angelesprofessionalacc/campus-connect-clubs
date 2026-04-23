@@ -190,21 +190,21 @@
     .sidebar-nav a.active i { opacity: 1; }
 
     .nav-section-label {
-      font-size: 0.58rem;
-      letter-spacing: 0.15em;
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: rgba(255,255,255,0.3);
-      padding: 0.75rem 1.25rem 0.3rem;
-      font-weight: 500;
+      color: rgba(200,168,75,0.55);
+      padding: 0.85rem 1.25rem 0.3rem;
     }
 
     .nav-section-label {
-      font-size: 0.58rem;
-      letter-spacing: 0.15em;
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: rgba(255,255,255,0.3);
-      padding: 0.75rem 1.25rem 0.3rem;
-      font-weight: 500;
+      color: rgba(200,168,75,0.55);
+      padding: 0.85rem 1.25rem 0.3rem;
     }
 
     .nav-link-item {
@@ -287,7 +287,8 @@
     .topbar {
       background: var(--white);
       border-bottom: 1px solid var(--border);
-      padding: 0.85rem 2rem;
+      padding: 0 1.75rem;
+      height: 62px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -300,7 +301,16 @@
       font-family: 'Playfair Display', serif;
       font-size: 1.15rem;
       color: var(--ink);
+      margin: 0;
     }
+
+    .topbar-subtitle {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .topbar-left { display: flex; flex-direction: column; justify-content: center; }
 
     .topbar-profile-btn-inner {
       display:flex;align-items:center;gap:0.5rem;background:var(--field-bg,#F5F9FD);
@@ -308,7 +318,13 @@
       cursor:pointer;font-family:'Outfit',sans-serif;font-size:0.82rem;font-weight:500;color:var(--ink,#0D1B3E);
       transition:border-color 0.15s,box-shadow 0.15s;
     }
-    .topbar-profile-btn:hover { border-color:#1E3160;box-shadow:0 0 0 3px rgba(30,49,96,0.06); }
+    .topbar-profile-btn {
+      display:flex;align-items:center;gap:0.5rem;background:var(--field-bg);
+      border:1px solid var(--border);border-radius:10px;padding:0.35rem 0.75rem 0.35rem 0.4rem;
+      cursor:pointer;font-family:'Outfit',sans-serif;font-size:0.82rem;font-weight:500;color:var(--ink);
+      transition:border-color 0.15s,box-shadow 0.15s;
+    }
+    .topbar-profile-btn:hover { border-color:var(--navy-light);box-shadow:0 0 0 3px rgba(30,49,96,0.06); }
     .topbar-avatar-s {
       width:28px;height:28px;border-radius:50%;
       background:linear-gradient(135deg,#1E3160,#0D1B3E);
@@ -335,7 +351,7 @@
 
     .content {
       flex: 1;
-      padding: 2rem;
+      padding: 1.75rem;
     }
 
     .view { display: none; }
@@ -360,44 +376,55 @@
 
     .stat-cards {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      grid-template-columns: repeat(4, 1fr);
       gap: 1rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
     }
 
     .stat-card {
       background: var(--white);
-      border-radius: 14px;
-      padding: 1.25rem 1.4rem;
-      box-shadow: 0 2px 12px rgba(13,27,62,0.07);
+      border-radius: 12px;
+      padding: 1.35rem 1.5rem;
       border: 1px solid var(--border);
-      position: relative;
-      overflow: hidden;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      transition: box-shadow 0.18s;
     }
 
-    .stat-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--navy-light), var(--gold));
+    .stat-card:hover { box-shadow: 0 6px 24px rgba(13,27,62,0.08); }
+
+    .stat-icon {
+      width: 46px; height: 46px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 1.1rem;
     }
+
+    .si-blue   { background: rgba(59,130,246,0.1);  color: var(--blue); }
+    .si-green  { background: rgba(76,175,80,0.1);   color: var(--green); }
+    .si-amber  { background: rgba(245,158,11,0.1);  color: var(--amber); }
+    .si-navy   { background: rgba(13,27,62,0.08);   color: var(--navy); }
+    .si-violet { background: rgba(139,92,246,0.1);  color: var(--violet); }
+    .si-gold   { background: rgba(200,168,75,0.12); color: var(--gold); }
+
+    .stat-body { flex: 1; }
 
     .stat-label {
-      font-size: 0.65rem;
+      font-size: 0.72rem;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.06em;
       color: var(--muted);
-      font-weight: 600;
-      margin-bottom: 0.5rem;
+      font-weight: 500;
+      margin-top: 0.25rem;
     }
 
     .stat-value {
       font-family: 'Playfair Display', serif;
-      font-size: 2rem;
+      font-size: 1.7rem;
       color: var(--ink);
       line-height: 1;
-      margin-bottom: 0.2rem;
     }
 
     .stat-sub {
@@ -810,16 +837,14 @@
 
     .event-stat-cards {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 1rem;
-      margin-bottom: 1.25rem;
-      justify-items: center;
-      align-items: stretch;
+      margin-bottom: 1.5rem;
     }
 
     .event-stat-cards .stat-card {
       width: 100%;
-      max-width: 160px;
+      max-width: none;
     }
 
     @media (max-width: 768px) {
@@ -828,6 +853,10 @@
       .main-wrap { margin-left: 0; }
       .content { padding: 1.25rem; }
       .stat-cards { grid-template-columns: 1fr 1fr; }
+      .event-stat-cards { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 1100px) {
+      .stat-cards { grid-template-columns: repeat(2, 1fr); }
       .event-stat-cards { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
@@ -877,7 +906,10 @@
 <div class="main-wrap">
 
   <header class="topbar">
-    <div class="topbar-title" id="topbar-title">Dashboard</div>
+    <div class="topbar-left">
+      <h1 class="topbar-title" id="topbar-page-title">Dashboard</h1>
+      <p class="topbar-subtitle" id="topbar-page-subtitle">Here's a snapshot of your campus club activity.</p>
+    </div>
     <div class="topbar-right">
       <button class="topbar-profile-btn" onclick="openProfileModal()">
         <div class="topbar-avatar-s" id="topbar-avatar-s" style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#1E3160,#0D1B3E);color:white;font-size:0.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">S</div>
@@ -897,24 +929,32 @@
 
       <div class="stat-cards">
         <div class="stat-card">
-          <div class="stat-label">Total Clubs</div>
-          <div class="stat-value" id="dash-stat-clubs">0</div>
-          <div class="stat-sub">Registered on campus</div>
+          <div class="stat-icon si-blue"><i class="fas fa-layer-group"></i></div>
+          <div class="stat-body">
+            <div class="stat-value" id="dash-stat-clubs">0</div>
+            <div class="stat-label">Total Clubs</div>
+          </div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Upcoming Events</div>
-          <div class="stat-value" id="dash-stat-events">0</div>
-          <div class="stat-sub">Across all clubs</div>
+          <div class="stat-icon si-amber"><i class="fas fa-calendar-alt"></i></div>
+          <div class="stat-body">
+            <div class="stat-value" id="dash-stat-events">0</div>
+            <div class="stat-label">Upcoming Events</div>
+          </div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Announcements</div>
-          <div class="stat-value" id="dash-stat-announcements">0</div>
-          <div class="stat-sub">Published updates</div>
+          <div class="stat-icon si-violet"><i class="fas fa-bullhorn"></i></div>
+          <div class="stat-body">
+            <div class="stat-value" id="dash-stat-announcements">0</div>
+            <div class="stat-label">Announcements</div>
+          </div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Activities</div>
-          <div class="stat-value" id="dash-stat-activities">0</div>
-          <div class="stat-sub">Logged this term</div>
+          <div class="stat-icon si-green"><i class="fas fa-clipboard-list"></i></div>
+          <div class="stat-body">
+            <div class="stat-value" id="dash-stat-activities">0</div>
+            <div class="stat-label">Activities</div>
+          </div>
         </div>
       </div>
 
@@ -994,24 +1034,32 @@
 
       <div class="event-stat-cards">
         <div class="stat-card">
-          <div class="stat-label">Upcoming</div>
-          <div class="stat-value" id="evt-stat-upcoming">0</div>
-          <div class="stat-sub">Scheduled ahead</div>
+          <div class="stat-icon si-blue"><i class="fas fa-calendar-alt"></i></div>
+          <div class="stat-body">
+            <div class="stat-value" id="evt-stat-upcoming">0</div>
+            <div class="stat-label">Upcoming</div>
+          </div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">This Week</div>
-          <div class="stat-value" id="evt-stat-thisweek">0</div>
-          <div class="stat-sub">Happening soon</div>
+          <div class="stat-icon si-amber"><i class="fas fa-clock"></i></div>
+          <div class="stat-body">
+            <div class="stat-value" id="evt-stat-thisweek">0</div>
+            <div class="stat-label">This Week</div>
+          </div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Completed</div>
-          <div class="stat-value" id="evt-stat-completed">0</div>
-          <div class="stat-sub">Already passed</div>
+          <div class="stat-icon si-green"><i class="fas fa-check-circle"></i></div>
+          <div class="stat-body">
+            <div class="stat-value" id="evt-stat-completed">0</div>
+            <div class="stat-label">Completed</div>
+          </div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Total Events</div>
-          <div class="stat-value" id="evt-stat-total">0</div>
-          <div class="stat-sub">Across all clubs</div>
+          <div class="stat-icon si-navy"><i class="fas fa-layer-group"></i></div>
+          <div class="stat-body">
+            <div class="stat-value" id="evt-stat-total">0</div>
+            <div class="stat-label">Total Events</div>
+          </div>
         </div>
       </div>
 
@@ -1188,7 +1236,7 @@
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + id).classList.add('active');
 
-    document.querySelectorAll('.sidebar-nav a').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.sidebar-nav a, .nav-link-item').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
 
     const titles = {
@@ -1196,8 +1244,18 @@
       memberships: 'My Memberships', events: 'Event Schedule',
       announcements: 'Announcements', records: 'Activity Records'
     };
-    const titleEl = document.getElementById('topbar-title');
+    const subtitles = {
+      dashboard: 'Here\'s a snapshot of your campus club activity.',
+      directory: 'Browse and apply to all registered student clubs.',
+      memberships: 'Track your club applications and active memberships.',
+      events: 'All upcoming and past events across your clubs.',
+      announcements: 'Official updates from your clubs.',
+      records: 'A log of all club activities you are involved in.'
+    };
+    const titleEl = document.getElementById('topbar-page-title');
+    const subtitleEl = document.getElementById('topbar-page-subtitle');
     if (titleEl) titleEl.textContent = titles[id] || 'Dashboard';
+    if (subtitleEl) subtitleEl.textContent = subtitles[id] || '';
   }
 
   function openProfileModal() {
