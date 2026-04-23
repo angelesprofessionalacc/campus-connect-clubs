@@ -1133,14 +1133,6 @@
         <h1>My Club</h1>
         <p>Manage events, announcements, and activities for your club.</p>
       </div>
-      <div id="my-club-loading" class="card-panel" style="">
-        <div class="card-panel-body">
-          <div class="empty-state">
-            <div class="empty-state-icon"><i class="fas fa-spinner fa-spin"></i></div>
-            <h4>Loading club data…</h4>
-          </div>
-        </div>
-      </div>
       <div id="my-club-none" class="card-panel" style="display:none;">
         <div class="card-panel-body">
           <div class="empty-state">
@@ -1244,54 +1236,6 @@
                   </select>
                 </div>
                 <button class="btn-submit-app" style="width:100%;margin-top:0.25rem;" onclick="officerPostActivity()">Log Activity</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col-md-4 mb-3">
-            <div class="card-panel">
-              <div class="card-panel-header" style="display:flex;justify-content:space-between;align-items:center;">
-                <h3>Club Announcements</h3>
-                <button onclick="loadOfficerAnnouncements()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;" title="Refresh"><i class="fas fa-sync-alt"></i></button>
-              </div>
-              <div class="card-panel-body" style="padding:0;" id="officer-ann-list">
-                <div class="empty-state" style="padding:2rem 1rem;">
-                  <div class="empty-state-icon" style="width:38px;height:38px;font-size:0.95rem;"><i class="fas fa-bullhorn"></i></div>
-                  <h4 style="font-size:0.9rem;">No announcements yet</h4>
-                  <p style="font-size:0.75rem;">Posted announcements will appear here.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4 mb-3">
-            <div class="card-panel">
-              <div class="card-panel-header" style="display:flex;justify-content:space-between;align-items:center;">
-                <h3>Club Events</h3>
-                <button onclick="loadOfficerEvents()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;" title="Refresh"><i class="fas fa-sync-alt"></i></button>
-              </div>
-              <div class="card-panel-body" style="padding:0;" id="officer-evt-list">
-                <div class="empty-state" style="padding:2rem 1rem;">
-                  <div class="empty-state-icon" style="width:38px;height:38px;font-size:0.95rem;"><i class="fas fa-calendar"></i></div>
-                  <h4 style="font-size:0.9rem;">No events yet</h4>
-                  <p style="font-size:0.75rem;">Added events will appear here.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4 mb-3">
-            <div class="card-panel">
-              <div class="card-panel-header" style="display:flex;justify-content:space-between;align-items:center;">
-                <h3>Club Activities</h3>
-                <button onclick="loadOfficerActivities()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;" title="Refresh"><i class="fas fa-sync-alt"></i></button>
-              </div>
-              <div class="card-panel-body" style="padding:0;" id="officer-act-list">
-                <div class="empty-state" style="padding:2rem 1rem;">
-                  <div class="empty-state-icon" style="width:38px;height:38px;font-size:0.95rem;"><i class="fas fa-clipboard-list"></i></div>
-                  <h4 style="font-size:0.9rem;">No activities yet</h4>
-                  <p style="font-size:0.75rem;">Logged activities will appear here.</p>
-                </div>
               </div>
             </div>
           </div>
@@ -1521,10 +1465,6 @@
     };
     const titleEl = document.getElementById('topbar-page-title');
     if (titleEl) titleEl.textContent = titles[id] || 'Dashboard';
-
-    if (id === 'applications-inbox') loadApplicationsInbox();
-    if (id === 'club-request') loadMyRequests();
-    if (id === 'my-club' && myClub) { renderMyClub(); }
   }
 
   function openProfileModal() {
@@ -2096,7 +2036,6 @@
     fetch(`${API_BASE}api/clubs?action=list_my_clubs`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
       .then(r => r.json())
       .then(data => {
-        document.getElementById('my-club-loading').style.display = 'none';
         if (data.success && data.clubs && data.clubs.length > 0) {
           myClub = data.clubs[0];
           renderMyClub();
@@ -2106,18 +2045,13 @@
           document.getElementById('my-club-content').style.display = 'none';
         }
       })
-      .catch(() => {
-        document.getElementById('my-club-loading').style.display = 'none';
-        document.getElementById('my-club-none').style.display = '';
-        document.getElementById('my-club-content').style.display = 'none';
-      });
+      .catch(() => {});
 
     loadMyRequests();
   }
 
   function renderMyClub() {
     if (!myClub) return;
-    document.getElementById('my-club-loading').style.display = 'none';
     document.getElementById('my-club-none').style.display = 'none';
     document.getElementById('my-club-content').style.display = '';
     document.getElementById('my-club-name').textContent     = myClub.name;
@@ -2126,9 +2060,6 @@
     document.getElementById('my-club-adviser').textContent  = myClub.adviser || '—';
     document.getElementById('my-club-location').textContent = myClub.location || '—';
     document.getElementById('my-club-members').textContent  = myClub.member_count || 0;
-    loadOfficerAnnouncements();
-    loadOfficerEvents();
-    loadOfficerActivities();
   }
 
   function officerPostAnnouncement() {
@@ -2149,7 +2080,6 @@
           document.getElementById('officer-ann-body').value  = '';
           alert('Announcement posted successfully.');
           loadAnnouncements();
-          loadOfficerAnnouncements();
         } else {
           alert(data.error || 'Failed to post announcement.');
         }
@@ -2178,7 +2108,6 @@
           document.getElementById('officer-evt-location').value = '';
           alert('Event added successfully.');
           loadEvents();
-          loadOfficerEvents();
         } else {
           alert(data.error || 'Failed to add event.');
         }
@@ -2206,7 +2135,6 @@
           document.getElementById('officer-act-date').value = '';
           alert('Activity logged successfully.');
           loadActivities();
-          loadOfficerActivities();
         } else {
           alert(data.error || 'Failed to log activity.');
         }
@@ -2215,11 +2143,7 @@
   }
 
   function loadApplicationsInbox() {
-    const container = document.getElementById('applications-inbox-body');
-    if (!myClub) {
-      if (container) container.innerHTML = `<div class="empty-state" style="padding:2.5rem 1.5rem;"><div class="empty-state-icon"><i class="fas fa-spinner fa-spin"></i></div><h4>Loading…</h4><p>Waiting for club data to load.</p></div>`;
-      return;
-    }
+    if (!myClub) return;
     fetch(`${API_BASE}api/applications?action=list_for_club&club_id=${myClub.id}`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
       .then(r => r.json())
       .then(data => {
@@ -2278,96 +2202,7 @@
       .catch(() => alert('Network error.'));
   }
 
-  function loadOfficerAnnouncements() {
-    if (!myClub) return;
-    fetch(`${API_BASE}api/announcements?action=list`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
-      .then(r => r.json())
-      .then(data => {
-        if (!data.success) return;
-        const mine = (data.announcements || []).filter(a => String(a.club_id) === String(myClub.id));
-        const container = document.getElementById('officer-ann-list');
-        if (!container) return;
-        if (mine.length === 0) {
-          container.innerHTML = `<div class="empty-state" style="padding:2rem 1rem;"><div class="empty-state-icon" style="width:38px;height:38px;font-size:0.95rem;"><i class="fas fa-bullhorn"></i></div><h4 style="font-size:0.9rem;">No announcements yet</h4><p style="font-size:0.75rem;">Posted announcements will appear here.</p></div>`;
-          return;
-        }
-        container.innerHTML = mine.map(a => `
-          <div style="padding:0.85rem 1.25rem;border-bottom:1px solid var(--border);">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.2rem;">
-              <strong style="font-size:0.85rem;">${escHtml(a.title)}</strong>
-              <button onclick="deleteOfficerAnnouncement(${a.id})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.75rem;" title="Delete"><i class="fas fa-trash"></i></button>
-            </div>
-            <p style="font-size:0.75rem;color:var(--muted);margin:0 0 0.2rem;">${escHtml(a.body || '')}</p>
-            <div style="font-size:0.7rem;color:var(--muted);">${a.created_at ? new Date(a.created_at).toLocaleDateString() : ''}</div>
-          </div>`).join('');
-      })
-      .catch(() => {});
-  }
-
-  function deleteOfficerAnnouncement(id) {
-    if (!confirm('Delete this announcement?')) return;
-    fetch(`${API_BASE}api/announcements?action=delete`, {
-      method: 'POST', headers: authHeaders(), credentials: 'include',
-      body: JSON.stringify({ id })
-    }).then(r => r.json()).then(data => {
-      if (data.success) { loadOfficerAnnouncements(); loadAnnouncements(); }
-      else alert(data.error || 'Failed to delete.');
-    }).catch(() => alert('Network error.'));
-  }
-
-  function loadOfficerEvents() {
-    if (!myClub) return;
-    fetch(`${API_BASE}api/events?action=list`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
-      .then(r => r.json())
-      .then(data => {
-        if (!data.success) return;
-        const mine = (data.events || []).filter(e => String(e.club_id) === String(myClub.id) || e.club_name === myClub.name);
-        const container = document.getElementById('officer-evt-list');
-        if (!container) return;
-        if (mine.length === 0) {
-          container.innerHTML = `<div class="empty-state" style="padding:2rem 1rem;"><div class="empty-state-icon" style="width:38px;height:38px;font-size:0.95rem;"><i class="fas fa-calendar"></i></div><h4 style="font-size:0.9rem;">No events yet</h4><p style="font-size:0.75rem;">Added events will appear here.</p></div>`;
-          return;
-        }
-        const statusCls = { Upcoming: 'pill-upcoming', 'This Week': 'pill-upcoming', Completed: 'pill-approved', Cancelled: 'pill-past' };
-        container.innerHTML = mine.map(e => `
-          <div style="padding:0.85rem 1.25rem;border-bottom:1px solid var(--border);">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.2rem;">
-              <strong style="font-size:0.85rem;">${escHtml(e.name)}</strong>
-              <span class="pill ${statusCls[e.status] || 'pill-upcoming'}" style="font-size:0.65rem;">${escHtml(e.status)}</span>
-            </div>
-            <div style="font-size:0.72rem;color:var(--muted);">${e.event_date ? new Date(e.event_date).toLocaleDateString() : '—'}${e.location ? ' · ' + escHtml(e.location) : ''}</div>
-          </div>`).join('');
-      })
-      .catch(() => {});
-  }
-
-  function loadOfficerActivities() {
-    if (!myClub) return;
-    fetch(`${API_BASE}api/activities?action=list`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
-      .then(r => r.json())
-      .then(data => {
-        if (!data.success) return;
-        const mine = (data.activities || []).filter(a => String(a.club_id) === String(myClub.id) || a.club_name === myClub.name);
-        const container = document.getElementById('officer-act-list');
-        if (!container) return;
-        if (mine.length === 0) {
-          container.innerHTML = `<div class="empty-state" style="padding:2rem 1rem;"><div class="empty-state-icon" style="width:38px;height:38px;font-size:0.95rem;"><i class="fas fa-clipboard-list"></i></div><h4 style="font-size:0.9rem;">No activities yet</h4><p style="font-size:0.75rem;">Logged activities will appear here.</p></div>`;
-          return;
-        }
-        const statusCls = { Planned: 'pill-pending', Ongoing: 'pill-upcoming', Completed: 'pill-approved' };
-        container.innerHTML = mine.map(a => `
-          <div style="padding:0.85rem 1.25rem;border-bottom:1px solid var(--border);">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.2rem;">
-              <strong style="font-size:0.85rem;">${escHtml(a.name)}</strong>
-              <span class="pill ${statusCls[a.status] || 'pill-pending'}" style="font-size:0.65rem;">${escHtml(a.status)}</span>
-            </div>
-            <div style="font-size:0.72rem;color:var(--muted);">${escHtml(a.activity_type || a.type || 'General')}${a.activity_date ? ' · ' + new Date(a.activity_date).toLocaleDateString() : ''}</div>
-          </div>`).join('');
-      })
-      .catch(() => {});
-  }
-
-
+  function loadMyRequests() {
     fetch(`${API_BASE}api/club_requests?action=my_requests`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
       .then(r => r.json())
       .then(data => {
