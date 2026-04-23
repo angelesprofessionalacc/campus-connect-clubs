@@ -72,7 +72,7 @@ class AuthManager {
         ];
     }
 
-   public function loginStudent($studentId, $password) {
+public function loginStudent($studentId, $password) {
     $stmt = $this->pdo->prepare("SELECT * FROM users WHERE student_id = ? AND (role = 'student' OR role = 'officer') LIMIT 1");
     $stmt->execute([$studentId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -80,8 +80,12 @@ class AuthManager {
     if (!$user) {
         return ['success' => false, 'error' => 'Invalid credentials'];
     }
-    if (!isset($user['password']) || !password_verify($password, $user['password'])) {
-        error_log('Login failed for student_id: ' . $studentId . ', password_verify result: ' . (password_verify($password, $user['password']) ? 'true' : 'false'));
+    
+    if (!isset($user['password']) || empty($user['password'])) {
+        return ['success' => false, 'error' => 'Invalid credentials'];
+    }
+    
+    if (!password_verify($password, $user['password'])) {
         return ['success' => false, 'error' => 'Invalid credentials'];
     }
 
@@ -103,8 +107,11 @@ class AuthManager {
 }
 
 public function storeSession($sessionId, $userId) {
-    $stmt = $this->pdo->prepare("DELETE FROM sessions WHERE user_id = ?");
-    $stmt->execute([$userId]);
+    $del = $this->pdo->prepare("DELETE FROM sessions WHERE user_id = ?");
+    $del->execute([$userId]);
+    $stmt = $this->pdo->prepare("INSERT INTO sessions (session_id, user_id, created_at) VALUES (?, ?, NOW())");
+    $stmt->execute([$sessionId, $userId]);
+}
     $stmt = $this->pdo->prepare("INSERT INTO sessions (session_id, user_id, created_at) VALUES (?, ?, NOW())");
     $stmt->execute([$sessionId, $userId]);
 }
