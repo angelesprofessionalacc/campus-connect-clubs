@@ -645,13 +645,13 @@ function handleStudentLogin(e) {
     .then(data => {
       btn.disabled = false;
       btn.innerHTML = 'Sign In';
-      if (data.success && data.user && data.user.role === 'student') {
+      if (data.success && data.user && (data.user.role === 'student' || data.user.role === 'officer')) {
         localStorage.setItem('ccc_user', JSON.stringify(data));
         localStorage.setItem('ccc_session_id', data.session_id || '');
         sessionStorage.setItem('ccc_user', data.user.student_id);
-        sessionStorage.setItem('ccc_role', 'student');
+        sessionStorage.setItem('ccc_role', data.user.role);
         window.location.replace('student_dashboard.html');
-      } else if (data.success && data.user && data.user.role !== 'student') {
+      } else if (data.success && data.user && data.user.role !== 'student' && data.user.role !== 'officer') {
         showFieldError('Invalid credentials. Please use the Student Login form.');
       } else {
         showFieldError(data.error || 'Login failed. Please try again.');
