@@ -71,21 +71,25 @@ class AuthManager {
             'session_id' => $sessionId
         ];
     }
-
 public function loginStudent($studentId, $password) {
     $stmt = $this->pdo->prepare("SELECT * FROM users WHERE student_id = ? AND (role = 'student' OR role = 'officer') LIMIT 1");
     $stmt->execute([$studentId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$user) {
+        error_log("No user found with student_id: $studentId");
         return ['success' => false, 'error' => 'Invalid credentials'];
     }
-    
+
     if (!isset($user['password']) || empty($user['password'])) {
+        error_log("User found, but no password set for student_id: $studentId");
         return ['success' => false, 'error' => 'Invalid credentials'];
     }
     
-    if (!password_verify($password, $user['password'])) {
+    $result = password_verify($password, $user['password']);
+    error_log("Password Verify for $studentId: " . ($result ? 'Passed' : 'Failed'));
+
+    if (!$result) {
         return ['success' => false, 'error' => 'Invalid credentials'];
     }
 
