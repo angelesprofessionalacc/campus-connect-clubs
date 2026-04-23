@@ -623,9 +623,6 @@
     <a onclick="showSection('applications', this)">
       <i class="fas fa-file-alt"></i> Club Applications <span id="apps-badge" style="display:none;background:#E74C3C;color:#fff;font-size:0.68rem;padding:1px 6px;border-radius:99px;margin-left:4px;"></span>
     </a>
-    <a onclick="showSection('club-requests', this)">
-      <i class="fas fa-inbox"></i> Club Requests <span id="club-req-badge" style="display:none;background:#E74C3C;color:#fff;font-size:0.68rem;padding:1px 6px;border-radius:99px;margin-left:4px;"></span>
-    </a>
   </nav>
 
   <div class="sidebar-footer">
@@ -713,7 +710,7 @@
                 <span style="font-size:0.95rem;font-weight:600;color:var(--ink);" id="stat-active-clubs">0</span>
               </div>
               <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border);">
-                <span style="font-size:0.8rem;color:var(--muted);">Pending Requests</span>
+                <span style="font-size:0.8rem;color:var(--muted);">Pending Clubs</span>
                 <span style="font-size:0.95rem;font-weight:600;color:var(--ink);" id="stat-pending-clubs">0</span>
               </div>
               <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;">
@@ -904,34 +901,6 @@
         </div>
         <div class="panel-footer">
           <span id="apps-count">Showing 0 applications</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="page-section" id="section-club-requests">
-      <div class="panel">
-        <div class="panel-header">
-          <span class="panel-title">Club Requests</span>
-          <div class="filter-bar">
-            <input class="search-input" type="text" placeholder="Search by club or officer…" id="club-req-search" oninput="filterClubRequestsTable()">
-            <select class="filter-select" id="club-req-status-filter" onchange="filterClubRequestsTable()">
-              <option value="">All Status</option>
-              <option value="Pending">Pending</option>
-              <option value="Approved">Approved</option>
-              <option value="Rejected">Rejected</option>
-            </select>
-          </div>
-        </div>
-        <div style="overflow-x:auto;">
-          <table class="data-table" id="club-req-table">
-            <thead><tr><th>Club Name</th><th>Category</th><th>Officer</th><th>Adviser</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="club-req-tbody">
-              <tr><td colspan="7" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">Loading…</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="panel-footer">
-          <span id="club-req-count">Showing 0 requests</span>
         </div>
       </div>
     </div>
@@ -1347,121 +1316,7 @@
     loadActivities();
     loadAnnouncements();
     loadApplications();
-    loadClubRequests();
   }
-
-  let allClubRequests = [];
-
-  function loadClubRequests() {
-    fetch(`${API_BASE}api/club_requests?action=list`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
-      .then(r => r.json())
-      .then(data => {
-        if (data.success) {
-          allClubRequests = data.requests || [];
-          renderClubRequestsTable(allClubRequests);
-          const pending = allClubRequests.filter(r => r.status === 'Pending').length;
-          const badge = document.getElementById('club-req-badge');
-          if (badge) {
-            badge.textContent = pending;
-            badge.style.display = pending > 0 ? '' : 'none';
-          }
-        }
-      })
-      .catch(() => {});
-  }
-
-  function renderClubRequestsTable(requests) {
-    const tbody = document.getElementById('club-req-tbody');
-    const countEl = document.getElementById('club-req-count');
-    if (!tbody) return;
-    if (!requests || requests.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">No club requests yet</td></tr>';
-      if (countEl) countEl.textContent = 'Showing 0 requests';
-      return;
-    }
-    const statusCls = { Pending: 'bs-pending', Approved: 'bs-active', Rejected: 'bs-inactive' };
-    tbody.innerHTML = requests.map(r => {
-      const officerName = escHtml(((r.first_name || '') + ' ' + (r.last_name || '')).trim() || r.student_id || '—');
-      const isPending = r.status === 'Pending';
-      return `
-        <tr>
-          <td><strong>${escHtml(r.club_name)}</strong></td>
-          <td><span class="badge-cat bc-${(r.category||'general').toLowerCase()}">${escHtml(r.category || '—')}</span></td>
-          <td style="font-size:0.78rem;">${officerName}</td>
-          <td style="font-size:0.78rem;color:var(--muted);">${escHtml(r.adviser || '—')}</td>
-          <td style="font-size:0.75rem;color:var(--muted);">${r.created_at ? new Date(r.created_at).toLocaleDateString() : '—'}</td>
-          <td><span class="badge-status ${statusCls[r.status] || 'bs-pending'}">${escHtml(r.status)}</span></td>
-          <td>
-            ${isPending
-              ? `<button class="tbl-action" onclick="openReviewClubRequestModal(${r.id})" title="Review"><i class="fas fa-eye"></i> Review</button>`
-              : `<span style="font-size:0.72rem;color:var(--muted);">${r.admin_note ? escHtml(r.admin_note) : '—'}</span>`
-            }
-          </td>
-        </tr>`;
-    }).join('');
-    if (countEl) countEl.textContent = `Showing ${requests.length} request${requests.length !== 1 ? 's' : ''}`;
-  }
-
-  function filterClubRequestsTable() {
-    const q = (document.getElementById('club-req-search').value || '').toLowerCase();
-    const status = document.getElementById('club-req-status-filter').value;
-    const filtered = allClubRequests.filter(r => {
-      const officerName = ((r.first_name || '') + ' ' + (r.last_name || '')).toLowerCase();
-      const matchSearch = !q || r.club_name.toLowerCase().includes(q) || officerName.includes(q);
-      const matchStatus = !status || r.status === status;
-      return matchSearch && matchStatus;
-    });
-    renderClubRequestsTable(filtered);
-  }
-
-  let selectedClubRequestId = null;
-
-  function openReviewClubRequestModal(requestId) {
-    const req = allClubRequests.find(r => r.id === requestId);
-    if (!req) return;
-    selectedClubRequestId = requestId;
-    document.getElementById('review-req-id').value = requestId;
-    document.getElementById('review-req-name').textContent = req.club_name || '—';
-    document.getElementById('review-req-category').textContent = req.category || '—';
-    document.getElementById('review-req-officer').textContent = ((req.first_name || '') + ' ' + (req.last_name || '')).trim() || req.student_id || '—';
-    document.getElementById('review-req-desc').textContent = req.description || '—';
-    document.getElementById('review-req-adviser').textContent = req.adviser || '—';
-    document.getElementById('review-req-location').textContent = req.location || '—';
-    document.getElementById('review-req-note').value = '';
-    document.getElementById('reviewClubRequestModal').classList.add('open');
-  }
-
-  function closeReviewClubRequestModal() {
-    document.getElementById('reviewClubRequestModal').classList.remove('open');
-    selectedClubRequestId = null;
-  }
-
-  document.getElementById('reviewClubRequestModal').addEventListener('click', function(e) {
-    if (e.target === this) closeReviewClubRequestModal();
-  });
-
-  function submitClubRequestReview(status) {
-    const id = selectedClubRequestId;
-    if (!id) return;
-    const note = document.getElementById('review-req-note').value.trim();
-    fetch(`${API_BASE}api/club_requests?action=review`, {
-      method: 'POST', headers: authHeaders(), credentials: 'include',
-      body: JSON.stringify({ id, status, admin_note: note })
-    })
-      .then(r => r.json())
-      .then(data => {
-        if (data.success) {
-          closeReviewClubRequestModal();
-          loadClubRequests();
-          if (status === 'Approved') loadClubs();
-        } else {
-          alert(data.error || 'Failed to submit review.');
-        }
-      })
-      .catch(() => alert('Network error.'));
-  }
-
-
 
   let allApplications = [];
 
@@ -1757,9 +1612,8 @@
     document.getElementById('clubs-stat-pending').textContent = pending;
     document.getElementById('dash-stat-clubs').textContent = total;
     document.getElementById('stat-active-clubs').textContent = active;
+    document.getElementById('stat-pending-clubs').textContent = pending;
     document.getElementById('clubs-count').textContent = `Showing ${total} club${total !== 1 ? 's' : ''}`;
-    const pendingReqs = allClubRequests.filter(r => r.status === 'Pending').length;
-    document.getElementById('stat-pending-clubs').textContent = pendingReqs;
   }
 
   function updateUserStats(users) {
@@ -2032,7 +1886,6 @@
     document.getElementById('section-' + name).classList.add('active');
     if (el) el.classList.add('active');
     window.scrollTo(0, 0);
-    if (name === 'club-requests') loadClubRequests();
   }
 
   document.addEventListener('click', function(e) {
@@ -2972,55 +2825,6 @@
     <div class="modal-footer">
       <button class="btn-modal-back" onclick="closeAddAnnouncementModal()">Cancel</button>
       <button class="btn-modal-next gold" onclick="submitAddAnnouncement()">Post Announcement ✓</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="reviewClubRequestModal">
-  <div class="modal-box" style="max-width:480px;">
-    <div class="modal-header">
-      <span class="modal-title">Review Club Request</span>
-      <button class="modal-close" onclick="closeReviewClubRequestModal()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal-body">
-      <input type="hidden" id="review-req-id">
-      <div style="background:var(--field-bg);border-radius:8px;padding:1rem;margin-bottom:1rem;">
-        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:0.2rem;">Club Name</div>
-        <div style="font-weight:600;font-size:0.95rem;" id="review-req-name"></div>
-      </div>
-      <div style="display:flex;gap:0.75rem;margin-bottom:1rem;">
-        <div style="flex:1;background:var(--field-bg);border-radius:8px;padding:0.75rem;">
-          <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.15rem;">Category</div>
-          <div style="font-size:0.82rem;font-weight:500;" id="review-req-category"></div>
-        </div>
-        <div style="flex:1;background:var(--field-bg);border-radius:8px;padding:0.75rem;">
-          <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.15rem;">Officer</div>
-          <div style="font-size:0.82rem;font-weight:500;" id="review-req-officer"></div>
-        </div>
-      </div>
-      <div style="background:var(--field-bg);border-radius:8px;padding:0.75rem;margin-bottom:1rem;">
-        <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.25rem;">Description</div>
-        <div style="font-size:0.8rem;line-height:1.55;" id="review-req-desc"></div>
-      </div>
-      <div style="display:flex;gap:0.75rem;margin-bottom:1rem;">
-        <div style="flex:1;background:var(--field-bg);border-radius:8px;padding:0.75rem;">
-          <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.15rem;">Adviser</div>
-          <div style="font-size:0.8rem;" id="review-req-adviser"></div>
-        </div>
-        <div style="flex:1;background:var(--field-bg);border-radius:8px;padding:0.75rem;">
-          <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.15rem;">Location</div>
-          <div style="font-size:0.8rem;" id="review-req-location"></div>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Admin Note <span style="font-size:0.72rem;color:var(--muted);">(optional, shown to officer)</span></label>
-        <textarea class="form-control-ccc" id="review-req-note" rows="2" placeholder="Leave a note for the officer…" style="resize:vertical;"></textarea>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-modal-back" onclick="closeReviewClubRequestModal()">Cancel</button>
-      <button class="btn-modal-next" style="background:var(--red);color:white;margin-right:0.5rem;" onclick="submitClubRequestReview('Rejected')">Reject</button>
-      <button class="btn-modal-next gold" onclick="submitClubRequestReview('Approved')">Approve ✓</button>
     </div>
   </div>
 </div>
