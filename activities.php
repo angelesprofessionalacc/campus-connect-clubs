@@ -35,9 +35,10 @@ if (!$user) {
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
     exit;
 }
-$isAdmin = $user['role'] === 'admin';
+$isAdmin   = $user['role'] === 'admin';
+$isOfficer = $user['role'] === 'officer';
 
-if (!$isAdmin && $method !== 'GET') {
+if (!$isAdmin && !$isOfficer && $method !== 'GET') {
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
     exit;
 }
@@ -57,6 +58,15 @@ if ($method === 'GET' && $action === 'list') {
         if ($row) $clubId = $row['id'];
     }
 
+    if ($isOfficer && $clubId) {
+        $own = $pdo->prepare("SELECT id FROM clubs WHERE id = ? AND officer_id = ? LIMIT 1");
+        $own->execute([$clubId, $user['id']]);
+        if (!$own->fetch()) {
+            echo json_encode(['success' => false, 'error' => 'You can only add activities to your own club']);
+            exit;
+        }
+    }
+
     $stmt = $pdo->prepare("INSERT INTO activities (name, club_id, activity_type, activity_date, status, description, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
     $stmt->execute([
         $data['name'] ?? '',
@@ -70,6 +80,14 @@ if ($method === 'GET' && $action === 'list') {
 
 } elseif ($method === 'POST' && $action === 'delete') {
     $data = json_decode(file_get_contents('php://input'), true);
+    if ($isOfficer) {
+        $own = $pdo->prepare("SELECT a.id FROM activities a JOIN clubs c ON a.club_id = c.id WHERE a.id = ? AND c.officer_id = ? LIMIT 1");
+        $own->execute([$data['id'], $user['id']]);
+        if (!$own->fetch()) {
+            echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+            exit;
+        }
+    }
     $stmt = $pdo->prepare("DELETE FROM activities WHERE id = ?");
     $stmt->execute([$data['id']]);
     echo json_encode(['success' => true]);
@@ -82,6 +100,14 @@ if ($method === 'GET' && $action === 'list') {
         $cs->execute([$data['club']]);
         $row = $cs->fetch();
         if ($row) $clubId = $row['id'];
+    }
+    if ($isOfficer) {
+        $own = $pdo->prepare("SELECT a.id FROM activities a JOIN clubs c ON a.club_id = c.id WHERE a.id = ? AND c.officer_id = ? LIMIT 1");
+        $own->execute([$data['id'], $user['id']]);
+        if (!$own->fetch()) {
+            echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+            exit;
+        }
     }
     $stmt = $pdo->prepare("UPDATE activities SET name=?, club_id=?, activity_type=?, activity_date=?, status=?, description=? WHERE id=?");
     $stmt->execute([
