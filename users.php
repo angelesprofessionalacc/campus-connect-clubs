@@ -91,6 +91,43 @@ if ($method === 'GET' && $action === 'list') {
     $stmt->execute([$id]);
     echo json_encode(['success' => true]);
 
+} elseif ($method === 'POST' && $action === 'reset_student') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    $id        = $data['id'] ?? '';
+    $firstName = trim($data['first_name'] ?? '');
+    $lastName  = trim($data['last_name'] ?? '');
+    $studentId = trim($data['student_id'] ?? '');
+    $password  = $data['password'] ?? '';
+
+    if (!$id || !$firstName || !$lastName || !$studentId) {
+        echo json_encode(['success' => false, 'error' => 'Missing required fields']);
+        exit;
+    }
+
+    $check = $pdo->prepare("SELECT role FROM users WHERE id = ? LIMIT 1");
+    $check->execute([$id]);
+    $row = $check->fetch();
+    if (!$row || $row['role'] === 'admin') {
+        echo json_encode(['success' => false, 'error' => 'Cannot reset this account']);
+        exit;
+    }
+
+    $idCheck = $pdo->prepare("SELECT id FROM users WHERE student_id = ? AND id != ? LIMIT 1");
+    $idCheck->execute([$studentId, $id]);
+    if ($idCheck->fetchColumn()) {
+        echo json_encode(['success' => false, 'message' => 'That Student ID is already used by another account']);
+        exit;
+    }
+
+    if (!empty($password)) {
+        $stmt = $pdo->prepare("UPDATE users SET first_name = ?, last_name = ?, student_id = ?, password = ? WHERE id = ?");
+        $stmt->execute([$firstName, $lastName, $studentId, password_hash($password, PASSWORD_DEFAULT), $id]);
+    } else {
+        $stmt = $pdo->prepare("UPDATE users SET first_name = ?, last_name = ?, student_id = ? WHERE id = ?");
+        $stmt->execute([$firstName, $lastName, $studentId, $id]);
+    }
+    echo json_encode(['success' => true]);
+
 } elseif ($method === 'GET' && $action === 'lookup') {
     $studentId = $_GET['student_id'] ?? '';
     if (empty($studentId)) {
