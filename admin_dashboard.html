@@ -692,7 +692,7 @@
             </div>
             <div style="overflow-x:auto;">
               <table class="data-table">
-                <thead><tr><th>Club</th><th>Category</th><th>Members</th><th>Status</th><th></th></tr></thead>
+                <thead><tr><th>Club</th><th>Category</th><th>Officer</th><th>Members</th><th>Status</th><th></th></tr></thead>
                 <tbody id="dashboard-clubs-tbody">
                   <tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">Loading...</td></tr>
                 </tbody>
@@ -743,7 +743,7 @@
         </div>
         <div style="overflow-x:auto;">
           <table class="data-table" id="clubs-table">
-            <thead><tr><th>Club Name</th><th>Category</th><th>Members</th><th>Status</th><th></th></tr></thead>
+            <thead><tr><th>Club Name</th><th>Category</th><th>Officer</th><th>Members</th><th>Status</th><th></th></tr></thead>
             <tbody id="clubs-tbody">
               <tr><td colspan="5" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">Loading clubs...</td></tr>
             </tbody>
@@ -1466,15 +1466,21 @@
       return;
     }
 
-    const html = clubs.map(club => `
+    const html = clubs.map(club => {
+      const officer = club.officer_id ? allUsers.find(u => u.id === club.officer_id) : null;
+      const officerLabel = officer
+        ? `<span style="font-size:0.78rem;">${escHtml(((officer.first_name||'') + ' ' + (officer.last_name||'')).trim() || officer.student_id)}</span>`
+        : `<span style="font-size:0.75rem;color:var(--muted);font-style:italic;">Unassigned</span>`;
+      return `
       <tr>
         <td><div class="club-name-cell"><div class="club-avatar" style="background:linear-gradient(135deg,${club.color},${club.color}cc);">${club.name.charAt(0).toUpperCase()}</div><strong>${escHtml(club.name)}</strong></div></td>
         <td><span class="badge-cat bc-${club.category.toLowerCase()}">${escHtml(club.category)}</span></td>
+        <td>${officerLabel}</td>
         <td><button class="member-count-btn" onclick="openClubMembersModal(${club.id}, '${escHtml(club.name)}')">${club.member_count || 0} <i class="fas fa-users" style="font-size:0.65rem;margin-left:2px;opacity:0.6;"></i></button></td>
         <td><span class="badge-status bs-${club.status.toLowerCase()}">${escHtml(club.status)}</span></td>
         <td><button class="tbl-action" onclick="editClub(${club.id})"><i class="fas fa-edit"></i></button><button class="tbl-action del" onclick="confirmDelete('club', ${club.id}, '${escHtml(club.name)}')"><i class="fas fa-trash-alt"></i></button></td>
       </tr>
-    `).join('');
+    `}).join('');
 
     tbody.innerHTML = html;
 
@@ -2211,6 +2217,10 @@
     document.getElementById('edit-club-email').value = club.email || '';
     document.getElementById('edit-club-location').value = club.location || '';
     document.getElementById('edit-club-desc').value = club.description || '';
+    const officerSelect = document.getElementById('edit-club-officer');
+    const officers = allUsers.filter(u => u.role === 'officer');
+    officerSelect.innerHTML = '<option value="">— No officer assigned —</option>' +
+      officers.map(u => `<option value="${u.id}" ${String(u.id) === String(club.officer_id) ? 'selected' : ''}>${escHtml((u.first_name||'') + ' ' + (u.last_name||'')).trim() || u.student_id}</option>`).join('');
     document.getElementById('editClubModal').classList.add('open');
   }
 
@@ -2223,6 +2233,7 @@
     const name = document.getElementById('edit-club-name').value.trim();
     const category = document.getElementById('edit-club-category').value;
     if (!name || !category) { alert('Name and category are required'); return; }
+    const officerVal = document.getElementById('edit-club-officer').value;
     fetch(`${API_BASE}api/clubs?action=update`, {
       method: 'POST', headers: authHeaders(), credentials: 'include',
       body: JSON.stringify({
@@ -2232,6 +2243,7 @@
         email: document.getElementById('edit-club-email').value.trim(),
         location: document.getElementById('edit-club-location').value.trim(),
         description: document.getElementById('edit-club-desc').value.trim(),
+        officer_id: officerVal ? parseInt(officerVal) : null,
       })
     }).then(r => r.json()).then(data => {
       if (data.success) { closeEditClubModal(); loadClubs(); }
@@ -2668,6 +2680,11 @@
       <div class="form-group"><label class="form-label">Adviser</label><input class="form-control-ccc" id="edit-club-adviser" type="text"></div>
       <div class="form-group"><label class="form-label">Email</label><input class="form-control-ccc" id="edit-club-email" type="email"></div>
       <div class="form-group"><label class="form-label">Location</label><input class="form-control-ccc" id="edit-club-location" type="text"></div>
+      <div class="form-group"><label class="form-label">Assign Officer</label>
+        <select class="form-control-ccc" id="edit-club-officer">
+          <option value="">— No officer assigned —</option>
+        </select>
+      </div>
       <div class="form-group"><label class="form-label">Description</label><textarea class="form-control-ccc" id="edit-club-desc" rows="3" style="resize:vertical;"></textarea></div>
     </div>
     <div class="modal-footer">
