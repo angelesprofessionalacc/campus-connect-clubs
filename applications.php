@@ -71,6 +71,25 @@ if ($method === 'POST' && $action === 'submit') {
     ]);
     echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
 
+} elseif ($method === 'GET' && $action === 'list_my') {
+    $sid = $user['student_id'] ?? '';
+    $email = $user['email'] ?? '';
+    if (!$sid && !$email) {
+        echo json_encode(['success' => true, 'applications' => []]);
+        exit;
+    }
+    $stmt = $pdo->prepare("SELECT ca.*, c.name AS club_name FROM club_applications ca LEFT JOIN clubs c ON ca.club_id = c.id WHERE ca.student_id = ? OR ca.email = ? ORDER BY ca.created_at DESC");
+    $stmt->execute([$sid ?: '', $email ?: '']);
+    echo json_encode(['success' => true, 'applications' => $stmt->fetchAll()]);
+
+} elseif ($method === 'GET' && $action === 'list_all') {
+    if (!$isAdmin) {
+        echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+        exit;
+    }
+    $stmt = $pdo->query("SELECT ca.*, c.name AS club_name FROM club_applications ca LEFT JOIN clubs c ON ca.club_id = c.id ORDER BY ca.created_at DESC");
+    echo json_encode(['success' => true, 'applications' => $stmt->fetchAll()]);
+
 } elseif ($method === 'GET' && $action === 'list_for_club') {
     if (!$isAdmin && !$isOfficer) {
         echo json_encode(['success' => false, 'error' => 'Unauthorized']);
