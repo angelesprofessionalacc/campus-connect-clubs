@@ -35,9 +35,10 @@ if (!$user) {
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
     exit;
 }
-$isAdmin = $user['role'] === 'admin';
+$isAdmin   = $user['role'] === 'admin';
+$isOfficer = $user['role'] === 'officer';
 
-if (!$isAdmin && $method !== 'GET') {
+if (!$isAdmin && !$isOfficer && $method !== 'GET') {
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
     exit;
 }
@@ -56,6 +57,15 @@ if ($method === 'GET' && $action === 'list') {
         if ($row) $clubId = $row['id'];
     }
 
+    if ($isOfficer && $clubId) {
+        $own = $pdo->prepare("SELECT id FROM clubs WHERE id = ? AND officer_id = ? LIMIT 1");
+        $own->execute([$clubId, $user['id']]);
+        if (!$own->fetch()) {
+            echo json_encode(['success' => false, 'error' => 'You can only add events to your own club']);
+            exit;
+        }
+    }
+
     $stmt = $pdo->prepare("INSERT INTO events (name, club_id, status, event_date, location, attendees, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
     $stmt->execute([
         $data['name'] ?? '',
@@ -69,6 +79,14 @@ if ($method === 'GET' && $action === 'list') {
 
 } elseif ($method === 'POST' && $action === 'delete') {
     $data = json_decode(file_get_contents('php://input'), true);
+    if ($isOfficer) {
+        $own = $pdo->prepare("SELECT e.id FROM events e JOIN clubs c ON e.club_id = c.id WHERE e.id = ? AND c.officer_id = ? LIMIT 1");
+        $own->execute([$data['id'], $user['id']]);
+        if (!$own->fetch()) {
+            echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+            exit;
+        }
+    }
     $stmt = $pdo->prepare("DELETE FROM events WHERE id = ?");
     $stmt->execute([$data['id']]);
     echo json_encode(['success' => true]);
@@ -82,6 +100,15 @@ if ($method === 'GET' && $action === 'list') {
         $cs->execute([$data['club']]);
         $row = $cs->fetch();
         if ($row) $clubId = $row['id'];
+    }
+
+    if ($isOfficer) {
+        $own = $pdo->prepare("SELECT e.id FROM events e JOIN clubs c ON e.club_id = c.id WHERE e.id = ? AND c.officer_id = ? LIMIT 1");
+        $own->execute([$data['id'], $user['id']]);
+        if (!$own->fetch()) {
+            echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+            exit;
+        }
     }
 
     $stmt = $pdo->prepare("UPDATE events SET name=?, club_id=?, status=?, event_date=?, location=?, attendees=? WHERE id=?");
