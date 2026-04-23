@@ -1106,6 +1106,53 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="resetStudentModal">
+  <div class="modal-box" style="max-width:440px;">
+    <div class="modal-header">
+      <span class="modal-title">Reset Student Account</span>
+      <button class="modal-close" onclick="closeResetStudentModal()"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="modal-body modal-step active" id="reset-step-1">
+      <div style="margin-bottom:0.85rem;padding:0.65rem 0.85rem;border-radius:8px;font-size:0.78rem;background:rgba(13,27,62,0.05);border:1px solid rgba(13,27,62,0.12);color:var(--muted);line-height:1.5;">
+        Update the student's details below. Leave the password fields blank to keep the current password.
+      </div>
+      <div style="display:flex;gap:0.6rem;">
+        <div class="form-group" style="flex:1"><label class="form-label">First Name <span style="color:var(--red)">*</span></label><input class="form-control-ccc" id="reset-first-name" type="text" placeholder="Juan"></div>
+        <div class="form-group" style="flex:1"><label class="form-label">Last Name <span style="color:var(--red)">*</span></label><input class="form-control-ccc" id="reset-last-name" type="text" placeholder="Dela Cruz"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Student ID <span style="color:var(--red)">*</span></label>
+        <input class="form-control-ccc" id="reset-student-id" type="text" placeholder="e.g. 2024-00142">
+      </div>
+      <div class="form-group">
+        <label class="form-label">New Password <span style="color:var(--muted);font-weight:400;font-size:0.75rem;">(optional)</span></label>
+        <input class="form-control-ccc" id="reset-password" type="password" placeholder="Leave blank to keep current">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm New Password</label>
+        <input class="form-control-ccc" id="reset-password-confirm" type="password" placeholder="Re-enter new password">
+      </div>
+    </div>
+
+    <div class="modal-body modal-step" id="reset-step-3">
+      <div class="modal-success">
+        <div class="success-icon"><i class="fas fa-check"></i></div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--ink);margin-bottom:0.4rem;">Account Updated!</div>
+        <div style="font-size:0.82rem;color:var(--muted);line-height:1.6;" id="reset-success-message">
+          The student account has been updated.
+        </div>
+        <button class="btn-modal-next" style="margin:1.25rem auto 0;display:block;" onclick="closeResetStudentModal()">Done</button>
+      </div>
+    </div>
+
+    <div class="modal-footer" id="reset-modal-footer">
+      <button class="btn-modal-back" onclick="closeResetStudentModal()">Cancel</button>
+      <button class="btn-modal-next gold" onclick="finishResetStudent()">Save Changes ✓</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="makeOfficerModal">
   <div class="modal-box" style="max-width:400px;">
     <div class="modal-header">
@@ -1419,7 +1466,7 @@
         ? `<td style="display:flex;gap:0.3rem;"><button class="tbl-action" onclick="viewUserDetails(${user.id})"><i class="fas fa-eye"></i></button></td>`
         : user.role === 'officer'
         ? `<td style="display:flex;gap:0.3rem;"><button class="tbl-action" onclick="viewUserDetails(${user.id})"><i class="fas fa-eye"></i></button><button class="tbl-action" onclick="openRemoveOfficerModal(${user.id}, '${fullName}')"><i class="fas fa-arrow-down"></i> Demote</button><button class="tbl-action del" onclick="confirmDelete('user', ${user.id}, '${fullName}')"><i class="fas fa-trash-alt"></i></button></td>`
-        : `<td style="display:flex;gap:0.3rem;"><button class="tbl-action" onclick="viewUserDetails(${user.id})"><i class="fas fa-eye"></i></button><button class="tbl-action" onclick="openMakeOfficerModal(${user.id}, '${fullName}')"><i class="fas fa-arrow-up"></i> Promote</button><button class="tbl-action del" onclick="confirmDelete('user', ${user.id}, '${fullName}')"><i class="fas fa-trash-alt"></i></button></td>`;
+        : `<td style="display:flex;gap:0.3rem;"><button class="tbl-action" onclick="viewUserDetails(${user.id})"><i class="fas fa-eye"></i></button><button class="tbl-action" onclick="openResetStudentModal(${user.id}, '${escHtml(user.first_name||'')}', '${escHtml(user.last_name||'')}', '${escHtml(user.student_id||'')}')"><i class="fas fa-redo-alt"></i> Reset</button><button class="tbl-action" onclick="openMakeOfficerModal(${user.id}, '${fullName}')"><i class="fas fa-arrow-up"></i> Promote</button><button class="tbl-action del" onclick="confirmDelete('user', ${user.id}, '${fullName}')"><i class="fas fa-trash-alt"></i></button></td>`;
 
       return `
         <tr>
@@ -2371,6 +2418,75 @@
       .catch(err => {
         console.error('Error:', err);
         alert('Error creating student account');
+      });
+  }
+
+  let resetStudentTargetId = null;
+
+  function openResetStudentModal(userId, firstName, lastName, studentId) {
+    resetStudentTargetId = userId;
+    document.getElementById('reset-first-name').value = firstName;
+    document.getElementById('reset-last-name').value = lastName;
+    document.getElementById('reset-student-id').value = studentId;
+    document.getElementById('reset-password').value = '';
+    document.getElementById('reset-password-confirm').value = '';
+    document.getElementById('reset-step-1').classList.add('active');
+    document.getElementById('reset-step-3').classList.remove('active');
+    document.getElementById('reset-modal-footer').style.display = '';
+    document.getElementById('resetStudentModal').classList.add('open');
+  }
+
+  function closeResetStudentModal() {
+    document.getElementById('resetStudentModal').classList.remove('open');
+    resetStudentTargetId = null;
+  }
+
+  document.getElementById('resetStudentModal').addEventListener('click', function(e) {
+    if (e.target === this) closeResetStudentModal();
+  });
+
+  function finishResetStudent() {
+    const firstName = document.getElementById('reset-first-name').value.trim();
+    const lastName = document.getElementById('reset-last-name').value.trim();
+    const studentId = document.getElementById('reset-student-id').value.trim();
+    const password = document.getElementById('reset-password').value;
+    const passwordConfirm = document.getElementById('reset-password-confirm').value;
+
+    if (!firstName || !lastName) { alert('Please enter first and last name'); return; }
+    if (!studentId) { alert('Please enter a student ID'); return; }
+    if (password && password.length < 8) { alert('Password must be at least 8 characters'); return; }
+    if (password && password !== passwordConfirm) { alert('Passwords do not match'); return; }
+
+    const payload = {
+      id: resetStudentTargetId,
+      first_name: firstName,
+      last_name: lastName,
+      student_id: studentId
+    };
+    if (password) payload.password = password;
+
+    fetch(`${API_BASE}api/users?action=reset_student`, {
+      method: 'POST',
+      headers: authHeaders(),
+      credentials: 'include',
+      body: JSON.stringify(payload)
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          document.getElementById('reset-step-1').classList.remove('active');
+          document.getElementById('reset-step-3').classList.add('active');
+          document.getElementById('reset-modal-footer').style.display = 'none';
+          document.getElementById('reset-success-message').innerHTML =
+            `Account <strong>${studentId}</strong> has been updated.`;
+          loadUsers();
+        } else {
+          alert(data.message || data.error || 'Failed to update student account');
+        }
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        alert('Error updating student account');
       });
   }
 
