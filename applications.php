@@ -26,6 +26,8 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS club_members (
     joined_at DATETIME DEFAULT NOW(),
     UNIQUE KEY unique_membership (club_id, user_id)
 )");
+
+$pdo->exec("CREATE TABLE IF NOT EXISTS club_applications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     club_id INT NOT NULL,
     full_name VARCHAR(255) NOT NULL,
