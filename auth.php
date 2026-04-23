@@ -93,7 +93,7 @@ if ($method === 'POST') {
         $studentId = $data['student_id'] ?? '';
         $password  = $data['password'] ?? '';
 
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE student_id = ? AND role = 'student' LIMIT 1");
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE student_id = ? AND (role = 'student' OR role = 'officer') LIMIT 1");
         $stmt->execute([$studentId]);
         $user = $stmt->fetch();
 
