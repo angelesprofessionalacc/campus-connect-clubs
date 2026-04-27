@@ -623,6 +623,9 @@
     <a onclick="showSection('applications', this)">
       <i class="fas fa-file-alt"></i> Club Applications <span id="apps-badge" style="display:none;background:#E74C3C;color:#fff;font-size:0.68rem;padding:1px 6px;border-radius:99px;margin-left:4px;"></span>
     </a>
+    <a onclick="showSection('club-requests', this)">
+      <i class="fas fa-plus-circle"></i> Club Requests <span id="club-requests-badge" style="display:none;background:#E74C3C;color:#fff;font-size:0.68rem;padding:1px 6px;border-radius:99px;margin-left:4px;"></span>
+    </a>
   </nav>
 
   <div class="sidebar-footer">
@@ -905,7 +908,84 @@
       </div>
     </div>
 
+    <div class="page-section" id="section-club-requests">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Club Requests</span>
+          <div class="filter-bar">
+            <input class="search-input" type="text" placeholder="Search by club name or officer…" id="cr-search" oninput="filterClubRequestsTable()">
+            <select class="filter-select" id="cr-status-filter" onchange="filterClubRequestsTable()">
+              <option value="">All Status</option>
+              <option value="Pending">Pending</option>
+              <option value="Approved">Approved</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table" id="cr-table">
+            <thead><tr><th>Club Name</th><th>Category</th><th>Officer</th><th>Adviser</th><th>Location</th><th>Submitted</th><th>Status</th><th></th></tr></thead>
+            <tbody id="cr-tbody">
+              <tr><td colspan="8" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel-footer">
+          <span id="cr-count">Showing 0 requests</span>
+        </div>
+      </div>
+    </div>
+
   </main>
+</div>
+
+<div class="modal-overlay" id="reviewClubRequestModal">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-header">
+      <span class="modal-title">Review Club Request</span>
+      <button class="modal-close" onclick="closeReviewClubRequestModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="rcr-id">
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.2rem;">Club Name</div>
+        <div id="rcr-club-name" style="font-weight:600;font-size:0.9rem;color:var(--ink);"></div>
+      </div>
+      <div style="display:flex;gap:1rem;margin-bottom:1rem;">
+        <div style="flex:1;">
+          <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.2rem;">Category</div>
+          <div id="rcr-category" style="font-size:0.82rem;color:var(--ink);"></div>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.2rem;">Officer</div>
+          <div id="rcr-officer" style="font-size:0.82rem;color:var(--ink);"></div>
+        </div>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.2rem;">Description</div>
+        <div id="rcr-description" style="font-size:0.82rem;color:var(--ink);white-space:pre-wrap;"></div>
+      </div>
+      <div style="display:flex;gap:1rem;margin-bottom:1rem;">
+        <div style="flex:1;">
+          <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.2rem;">Adviser</div>
+          <div id="rcr-adviser" style="font-size:0.82rem;color:var(--ink);"></div>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.2rem;">Location</div>
+          <div id="rcr-location" style="font-size:0.82rem;color:var(--ink);"></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Admin Note <span style="color:var(--muted);font-weight:400;">(optional)</span></label>
+        <textarea class="form-control-ccc" id="rcr-note" rows="2" style="resize:vertical;" placeholder="Reason for approval or rejection…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-back" onclick="closeReviewClubRequestModal()">Cancel</button>
+      <button class="btn-sm" style="background:#fee2e2;color:#ef4444;border:none;padding:0.45rem 1rem;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;" onclick="submitClubRequestReview('Rejected')">Reject</button>
+      <button class="btn-modal-next gold" onclick="submitClubRequestReview('Approved')">Approve ✓</button>
+    </div>
+  </div>
 </div>
 
 <div class="modal-overlay" id="addClubModal">
@@ -1316,6 +1396,7 @@
     loadActivities();
     loadAnnouncements();
     loadApplications();
+    loadClubRequests();
   }
 
   let allApplications = [];
@@ -2626,6 +2707,109 @@
         console.error('Error:', err);
         alert('Error demoting user');
       });
+  }
+
+  let allClubRequests = [];
+
+  function loadClubRequests() {
+    fetch(`${API_BASE}api/club_requests?action=list`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          allClubRequests = data.requests || [];
+          renderClubRequestsTable(allClubRequests);
+          const pending = allClubRequests.filter(r => r.status === 'Pending').length;
+          const badge = document.getElementById('club-requests-badge');
+          if (badge) {
+            if (pending > 0) { badge.textContent = pending; badge.style.display = ''; }
+            else badge.style.display = 'none';
+          }
+          const statEl = document.getElementById('stat-pending-clubs');
+          if (statEl) statEl.textContent = allClubRequests.filter(r => r.status === 'Pending').length;
+        }
+      })
+      .catch(() => {});
+  }
+
+  function renderClubRequestsTable(list) {
+    const tbody = document.getElementById('cr-tbody');
+    const countEl = document.getElementById('cr-count');
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:0.8rem;">No club requests found</td></tr>';
+      if (countEl) countEl.textContent = 'Showing 0 requests';
+      return;
+    }
+    const statusColor = { Pending: '#f59e0b', Approved: '#22c55e', Rejected: '#ef4444' };
+    tbody.innerHTML = list.map(r => `
+      <tr data-id="${r.id}">
+        <td style="font-weight:600;">${escHtml(r.club_name)}</td>
+        <td>${escHtml(r.category || '—')}</td>
+        <td>${escHtml((r.first_name || '') + ' ' + (r.last_name || ''))} <span style="font-size:0.7rem;color:var(--muted);">${escHtml(r.student_id || '')}</span></td>
+        <td>${escHtml(r.adviser || '—')}</td>
+        <td>${escHtml(r.location || '—')}</td>
+        <td>${r.created_at ? new Date(r.created_at).toLocaleDateString() : '—'}</td>
+        <td><span style="font-size:0.75rem;font-weight:600;color:${statusColor[r.status] || '#64748b'}">${escHtml(r.status)}</span></td>
+        <td style="white-space:nowrap;">
+          ${r.status === 'Pending' ? `<button class="btn-sm primary" onclick="openReviewClubRequestModal(${r.id})">Review</button>` : `<button class="btn-sm" onclick="openReviewClubRequestModal(${r.id})">View</button>`}
+        </td>
+      </tr>
+    `).join('');
+    if (countEl) countEl.textContent = `Showing ${list.length} request${list.length !== 1 ? 's' : ''}`;
+  }
+
+  function filterClubRequestsTable() {
+    const q = (document.getElementById('cr-search').value || '').toLowerCase();
+    const s = document.getElementById('cr-status-filter').value;
+    const filtered = allClubRequests.filter(r => {
+      const name = (r.first_name || '') + ' ' + (r.last_name || '');
+      const matchQ = !q || r.club_name.toLowerCase().includes(q) || name.toLowerCase().includes(q) || (r.student_id || '').toLowerCase().includes(q);
+      const matchS = !s || r.status === s;
+      return matchQ && matchS;
+    });
+    renderClubRequestsTable(filtered);
+  }
+
+  function openReviewClubRequestModal(id) {
+    const r = allClubRequests.find(x => x.id === id);
+    if (!r) return;
+    document.getElementById('rcr-id').value = r.id;
+    document.getElementById('rcr-club-name').textContent = r.club_name;
+    document.getElementById('rcr-category').textContent = r.category || '—';
+    document.getElementById('rcr-officer').textContent = ((r.first_name || '') + ' ' + (r.last_name || '')).trim() + (r.student_id ? ' (' + r.student_id + ')' : '');
+    document.getElementById('rcr-description').textContent = r.description || '—';
+    document.getElementById('rcr-adviser').textContent = r.adviser || '—';
+    document.getElementById('rcr-location').textContent = r.location || '—';
+    document.getElementById('rcr-note').value = r.admin_note || '';
+    document.getElementById('reviewClubRequestModal').classList.add('open');
+  }
+
+  function closeReviewClubRequestModal() {
+    document.getElementById('reviewClubRequestModal').classList.remove('open');
+  }
+
+  document.getElementById('reviewClubRequestModal').addEventListener('click', function(e) {
+    if (e.target === this) closeReviewClubRequestModal();
+  });
+
+  function submitClubRequestReview(status) {
+    const id = parseInt(document.getElementById('rcr-id').value);
+    const admin_note = document.getElementById('rcr-note').value.trim();
+    fetch(`${API_BASE}api/club_requests?action=review`, {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'X-Session-Token': getSessionToken() },
+      body: JSON.stringify({ id, status, admin_note })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          closeReviewClubRequestModal();
+          loadClubRequests();
+          if (status === 'Approved') loadClubs();
+        } else {
+          alert(data.error || 'Failed to submit review.');
+        }
+      })
+      .catch(() => alert('Network error.'));
   }
 
   document.addEventListener('DOMContentLoaded', function() {
