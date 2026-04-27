@@ -1142,6 +1142,37 @@
           </div>
         </div>
       </div>
+      <div id="my-club-pending" class="card-panel" style="display:none;margin-bottom:1.25rem;">
+        <div class="card-panel-body">
+          <div style="display:flex;align-items:flex-start;gap:0.9rem;">
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fas fa-hourglass-half" style="color:#f59e0b;font-size:0.9rem;"></i>
+            </div>
+            <div>
+              <div style="font-weight:600;font-size:0.88rem;color:var(--ink);margin-bottom:0.2rem;">Club Request Pending</div>
+              <div id="my-club-pending-name" style="font-size:0.8rem;color:var(--muted);margin-bottom:0.3rem;"></div>
+              <div style="font-size:0.75rem;color:var(--muted);">Your request has been submitted and is awaiting admin review. You'll be able to manage your club here once it's approved.</div>
+            </div>
+            <span class="pill pill-pending" style="margin-left:auto;flex-shrink:0;font-size:0.68rem;">Pending</span>
+          </div>
+        </div>
+      </div>
+      <div id="my-club-rejected" class="card-panel" style="display:none;margin-bottom:1.25rem;">
+        <div class="card-panel-body">
+          <div style="display:flex;align-items:flex-start;gap:0.9rem;">
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(239,68,68,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fas fa-times-circle" style="color:#ef4444;font-size:0.9rem;"></i>
+            </div>
+            <div>
+              <div style="font-weight:600;font-size:0.88rem;color:var(--ink);margin-bottom:0.2rem;">Club Request Rejected</div>
+              <div id="my-club-rejected-name" style="font-size:0.8rem;color:var(--muted);margin-bottom:0.3rem;"></div>
+              <div id="my-club-rejected-note" style="font-size:0.75rem;color:var(--muted);font-style:italic;"></div>
+              <div style="font-size:0.75rem;color:var(--muted);margin-top:0.2rem;">You may submit a new club request via <strong>Request Club</strong>.</div>
+            </div>
+            <span class="pill pill-past" style="margin-left:auto;flex-shrink:0;font-size:0.68rem;">Rejected</span>
+          </div>
+        </div>
+      </div>
       <div id="my-club-content" style="display:none;">
         <div id="my-club-info-card" class="card-panel" style="margin-bottom:1.25rem;">
           <div class="card-panel-header">
@@ -2041,8 +2072,36 @@
           renderMyClub();
           loadApplicationsInbox();
         } else {
-          document.getElementById('my-club-none').style.display = '';
           document.getElementById('my-club-content').style.display = 'none';
+          fetch(`${API_BASE}api/club_requests?action=my_requests`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
+            .then(r => r.json())
+            .then(reqData => {
+              const pending = document.getElementById('my-club-pending');
+              const rejected = document.getElementById('my-club-rejected');
+              const none = document.getElementById('my-club-none');
+              pending.style.display = 'none';
+              rejected.style.display = 'none';
+              none.style.display = 'none';
+              if (reqData.success && reqData.requests && reqData.requests.length > 0) {
+                const latest = reqData.requests[0];
+                if (latest.status === 'Pending') {
+                  document.getElementById('my-club-pending-name').textContent = latest.club_name;
+                  pending.style.display = '';
+                } else if (latest.status === 'Rejected') {
+                  document.getElementById('my-club-rejected-name').textContent = latest.club_name;
+                  const noteEl = document.getElementById('my-club-rejected-note');
+                  noteEl.textContent = latest.admin_note ? 'Admin note: ' + latest.admin_note : '';
+                  rejected.style.display = '';
+                } else {
+                  none.style.display = '';
+                }
+              } else {
+                none.style.display = '';
+              }
+            })
+            .catch(() => {
+              document.getElementById('my-club-none').style.display = '';
+            });
         }
       })
       .catch(() => {});
