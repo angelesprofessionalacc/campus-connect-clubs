@@ -52,9 +52,10 @@ if (!$user) {
 
 $isAdmin   = $user['role'] === 'admin';
 $isOfficer = $user['role'] === 'officer';
+$isStudent = $user['role'] === 'student';
 
 if ($method === 'POST' && $action === 'submit') {
-    if (!$isOfficer && !$isAdmin) {
+    if (!$isOfficer && !$isStudent && !$isAdmin) {
         echo json_encode(['success' => false, 'error' => 'Unauthorized']);
         exit;
     }
@@ -63,6 +64,18 @@ if ($method === 'POST' && $action === 'submit') {
         echo json_encode(['success' => false, 'error' => 'Club name is required']);
         exit;
     }
+
+    $existing = $pdo->prepare("SELECT id, status FROM club_requests WHERE officer_id = ? AND status IN ('Pending','Approved') LIMIT 1");
+    $existing->execute([$user['id']]);
+    $dup = $existing->fetch();
+    if ($dup) {
+        $msg = $dup['status'] === 'Approved'
+            ? 'Your club request has already been approved.'
+            : 'You already have a pending club request. Wait for it to be reviewed before submitting another.';
+        echo json_encode(['success' => false, 'error' => $msg]);
+        exit;
+    }
+
     $stmt = $pdo->prepare("INSERT INTO club_requests (officer_id, club_name, category, description, adviser, email, location, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending', NOW())");
     $stmt->execute([
         $user['id'],
@@ -76,10 +89,6 @@ if ($method === 'POST' && $action === 'submit') {
     echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
 
 } elseif ($method === 'GET' && $action === 'my_requests') {
-    if (!$isOfficer && !$isAdmin) {
-        echo json_encode(['success' => false, 'error' => 'Unauthorized']);
-        exit;
-    }
     $stmt = $pdo->prepare("SELECT * FROM club_requests WHERE officer_id = ? ORDER BY created_at DESC");
     $stmt->execute([$user['id']]);
     echo json_encode(['success' => true, 'requests' => $stmt->fetchAll()]);
@@ -101,17 +110,31 @@ if ($method === 'POST' && $action === 'submit') {
     $reqId  = $data['id']         ?? null;
     $status = $data['status']     ?? null;
     $note   = $data['admin_note'] ?? '';
+
     if (!$reqId || !in_array($status, ['Approved', 'Rejected'])) {
         echo json_encode(['success' => false, 'error' => 'Invalid data']);
         exit;
     }
-    $stmt = $pdo->prepare("UPDATE club_requests SET status = ?, admin_note = ? WHERE id = ?");
-    $stmt->execute([$status, $note, $reqId]);
-    if ($status === 'Approved') {
-        $req = $pdo->prepare("SELECT * FROM club_requests WHERE id = ? LIMIT 1");
-        $req->execute([$reqId]);
-        $row = $req->fetch();
-        if ($row) {
+
+    $check = $pdo->prepare("SELECT * FROM club_requests WHERE id = ? LIMIT 1");
+    $check->execute([$reqId]);
+    $row = $check->fetch();
+    if (!$row) {
+        echo json_encode(['success' => false, 'error' => 'Request not found']);
+        exit;
+    }
+
+    if ($row['status'] !== 'Pending') {
+        echo json_encode(['success' => false, 'error' => 'This request has already been reviewed.']);
+        exit;
+    }
+
+    $pdo->beginTransaction();
+    try {
+        $stmt = $pdo->prepare("UPDATE club_requests SET status = ?, admin_note = ? WHERE id = ?");
+        $stmt->execute([$status, $note, $reqId]);
+
+        if ($status === 'Approved') {
             $ins = $pdo->prepare("INSERT INTO clubs (name, category, description, adviser, email, location, status, officer_id, color, year, created_at) VALUES (?, ?, ?, ?, ?, ?, 'Active', ?, '#3b82f6', ?, NOW())");
             $ins->execute([
                 $row['club_name'],
@@ -123,9 +146,17 @@ if ($method === 'POST' && $action === 'submit') {
                 $row['officer_id'],
                 date('Y'),
             ]);
+
+            $promote = $pdo->prepare("UPDATE users SET role = 'officer' WHERE id = ? AND role = 'student'");
+            $promote->execute([$row['officer_id']]);
         }
+
+        $pdo->commit();
+        echo json_encode(['success' => true]);
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        echo json_encode(['success' => false, 'error' => 'Transaction failed: ' . $e->getMessage()]);
     }
-    echo json_encode(['success' => true]);
 
 } else {
     echo json_encode(['success' => false, 'error' => 'Unknown action']);
