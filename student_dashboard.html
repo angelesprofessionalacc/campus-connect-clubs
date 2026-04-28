@@ -910,10 +910,6 @@
     <button class="nav-link-item officer-only" style="display:none;" onclick="showView('club-request', this)">
       <i class="fas fa-plus-circle"></i> Request Club
     </button>
-    <div class="nav-section-label student-request-only" style="display:none;">Club</div>
-    <button class="nav-link-item student-request-only" style="display:none;" onclick="showView('club-request', this)">
-      <i class="fas fa-plus-circle"></i> Request Club
-    </button>
   </nav>
 
   <div class="sidebar-footer">
@@ -1275,6 +1271,17 @@
             </div>
           </div>
         </div>
+
+        <div class="card-panel" style="margin-top:0.25rem;">
+          <div class="card-panel-header"><h3>Club Members</h3></div>
+          <div class="card-panel-body" style="padding:0;" id="my-club-members-list">
+            <div class="empty-state" style="padding:2rem 1rem;">
+              <div class="empty-state-icon" style="width:38px;height:38px;font-size:0.95rem;"><i class="fas fa-users"></i></div>
+              <h4 style="font-size:0.9rem;">No members yet</h4>
+              <p style="font-size:0.75rem;">Accepted applicants will appear here.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1484,9 +1491,6 @@
             if (data.user.role === 'officer') {
               document.querySelectorAll('.officer-only').forEach(el => el.style.display = '');
               loadOfficerData();
-            } else if (data.user.role === 'student') {
-              document.querySelectorAll('.student-request-only').forEach(el => el.style.display = '');
-              loadMyRequests();
             }
           }
         } catch(innerErr) {
@@ -1723,17 +1727,20 @@
 
     grid.innerHTML = list.map(c => {
       const appliedThisSession = sessionApplied.has(c.name);
+      const isMyClub = myClub && myClub.id === c.id;
       return `
         <div class="club-card">
           <div class="club-card-badge">${c.category}</div>
           <h4>${c.name}</h4>
           <p>${c.desc}</p>
           <div style="font-size:0.7rem;color:var(--muted);margin-bottom:0.5rem;"><i class="fas fa-users" style="margin-right:3px;opacity:0.6;"></i>${c.member_count || 0} member${c.member_count !== 1 ? 's' : ''}</div>
-          ${c.member
-            ? '<button class="btn-apply btn-applied" disabled><i class="fas fa-check-circle" style="margin-right:5px;"></i>Member</button>'
-            : c.pending || appliedThisSession
-              ? '<button class="btn-apply btn-applied" disabled>Application Pending</button>'
-              : `<button class="btn-apply" onclick="openApplicationModal('${c.name}')">Apply to Join</button>`
+          ${isMyClub
+            ? '<button class="btn-apply btn-applied" disabled><i class="fas fa-crown" style="margin-right:5px;"></i>Your Club</button>'
+            : c.member
+              ? '<button class="btn-apply btn-applied" disabled><i class="fas fa-check-circle" style="margin-right:5px;"></i>Member</button>'
+              : c.pending || appliedThisSession
+                ? '<button class="btn-apply btn-applied" disabled>Application Pending</button>'
+                : `<button class="btn-apply" onclick="openApplicationModal('${c.name}')">Apply to Join</button>`
           }
         </div>
       `;
@@ -2090,17 +2097,18 @@
           myClub = data.clubs[0];
           renderMyClub();
           loadApplicationsInbox();
+          loadClubs();
         } else {
           document.getElementById('my-club-content').style.display = 'none';
           fetch(`${API_BASE}api/club_requests?action=my_requests`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
             .then(r => r.json())
             .then(reqData => {
-              const pending = document.getElementById('my-club-pending');
+              const pending  = document.getElementById('my-club-pending');
               const rejected = document.getElementById('my-club-rejected');
-              const none = document.getElementById('my-club-none');
-              pending.style.display = 'none';
+              const none     = document.getElementById('my-club-none');
+              pending.style.display  = 'none';
               rejected.style.display = 'none';
-              none.style.display = 'none';
+              none.style.display     = 'none';
               if (reqData.success && reqData.requests && reqData.requests.length > 0) {
                 const latest = reqData.requests[0];
                 if (latest.status === 'Pending') {
@@ -2118,9 +2126,7 @@
                 none.style.display = '';
               }
             })
-            .catch(() => {
-              document.getElementById('my-club-none').style.display = '';
-            });
+            .catch(() => { document.getElementById('my-club-none').style.display = ''; });
         }
       })
       .catch(() => {});
@@ -2130,7 +2136,9 @@
 
   function renderMyClub() {
     if (!myClub) return;
-    document.getElementById('my-club-none').style.display = 'none';
+    document.getElementById('my-club-none').style.display    = 'none';
+    document.getElementById('my-club-pending').style.display = 'none';
+    document.getElementById('my-club-rejected').style.display = 'none';
     document.getElementById('my-club-content').style.display = '';
     document.getElementById('my-club-name').textContent     = myClub.name;
     document.getElementById('my-club-category').textContent = myClub.category || '';
@@ -2138,6 +2146,39 @@
     document.getElementById('my-club-adviser').textContent  = myClub.adviser || '—';
     document.getElementById('my-club-location').textContent = myClub.location || '—';
     document.getElementById('my-club-members').textContent  = myClub.member_count || 0;
+    loadClubMembers();
+  }
+
+  function loadClubMembers() {
+    if (!myClub) return;
+    fetch(`${API_BASE}api/clubs?action=list_members&club_id=${myClub.id}`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
+      .then(r => r.json())
+      .then(data => {
+        const el = document.getElementById('my-club-members-list');
+        if (!data.success || !data.members || data.members.length === 0) {
+          el.innerHTML = `
+            <div class="empty-state" style="padding:2rem 1rem;">
+              <div class="empty-state-icon" style="width:38px;height:38px;font-size:0.95rem;"><i class="fas fa-users"></i></div>
+              <h4 style="font-size:0.9rem;">No members yet</h4>
+              <p style="font-size:0.75rem;">Accepted applicants will appear here.</p>
+            </div>`;
+          return;
+        }
+        el.innerHTML = `
+          <table class="event-table">
+            <thead><tr><th>Name</th><th>Student ID</th><th>Role</th><th>Joined</th></tr></thead>
+            <tbody>
+              ${data.members.map(m => `
+                <tr>
+                  <td><strong>${escHtml((m.first_name || '') + ' ' + (m.last_name || ''))}</strong></td>
+                  <td style="color:var(--muted);font-size:0.77rem;">${escHtml(m.student_id || '—')}</td>
+                  <td style="color:var(--muted);font-size:0.77rem;">${escHtml(m.role || 'student')}</td>
+                  <td style="color:var(--muted);font-size:0.77rem;">${m.joined_at ? new Date(m.joined_at).toLocaleDateString() : '—'}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>`;
+      })
+      .catch(() => {});
   }
 
   function officerPostAnnouncement() {
@@ -2274,8 +2315,10 @@
     })
       .then(r => r.json())
       .then(data => {
-        if (data.success) loadApplicationsInbox();
-        else alert(data.error || 'Failed to update.');
+        if (data.success) {
+          loadApplicationsInbox();
+          if (status === 'Accepted') loadClubMembers();
+        } else alert(data.error || 'Failed to update.');
       })
       .catch(() => alert('Network error.'));
   }
