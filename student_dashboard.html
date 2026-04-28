@@ -910,6 +910,10 @@
     <button class="nav-link-item officer-only" style="display:none;" onclick="showView('club-request', this)">
       <i class="fas fa-plus-circle"></i> Request Club
     </button>
+    <div class="nav-section-label student-request-only" style="display:none;">Club</div>
+    <button class="nav-link-item student-request-only" style="display:none;" onclick="showView('club-request', this)">
+      <i class="fas fa-plus-circle"></i> Request Club
+    </button>
   </nav>
 
   <div class="sidebar-footer">
@@ -1299,7 +1303,19 @@
         <div class="col-md-7">
           <div class="card-panel">
             <div class="card-panel-header"><h3>New Club Proposal</h3></div>
-            <div class="card-panel-body">
+            <div id="club-request-lock" style="display:none;padding:1.25rem;">
+              <div style="display:flex;align-items:flex-start;gap:0.85rem;">
+                <div style="width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,0.05);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <i id="crlock-icon" class="fas fa-hourglass-half" style="color:#f59e0b;font-size:0.88rem;"></i>
+                </div>
+                <div>
+                  <div id="crlock-title" style="font-weight:600;font-size:0.86rem;color:var(--ink);margin-bottom:0.15rem;"></div>
+                  <div id="crlock-club" style="font-size:0.78rem;color:var(--muted);margin-bottom:0.3rem;font-style:italic;"></div>
+                  <div id="crlock-msg" style="font-size:0.75rem;color:var(--muted);line-height:1.5;"></div>
+                </div>
+              </div>
+            </div>
+            <div id="club-request-form-body" class="card-panel-body">
               <div class="form-group">
                 <label class="form-label">Club Name <span style="color:#E74C3C">*</span></label>
                 <input class="form-control" id="req-club-name" type="text" placeholder="Proposed club name">
@@ -1468,6 +1484,9 @@
             if (data.user.role === 'officer') {
               document.querySelectorAll('.officer-only').forEach(el => el.style.display = '');
               loadOfficerData();
+            } else if (data.user.role === 'student') {
+              document.querySelectorAll('.student-request-only').forEach(el => el.style.display = '');
+              loadMyRequests();
             }
           }
         } catch(innerErr) {
@@ -2265,9 +2284,34 @@
     fetch(`${API_BASE}api/club_requests?action=my_requests`, { credentials: 'include', headers: { 'X-Session-Token': getSessionToken() } })
       .then(r => r.json())
       .then(data => {
-        if (data.success) renderMyRequests(data.requests);
+        if (data.success) {
+          renderMyRequests(data.requests);
+          applyRequestFormState(data.requests);
+        }
       })
       .catch(() => {});
+  }
+
+  function applyRequestFormState(requests) {
+    const formEl   = document.getElementById('club-request-form-body');
+    const lockEl   = document.getElementById('club-request-lock');
+    if (!formEl || !lockEl) return;
+    const active = requests && requests.find(r => r.status === 'Pending' || r.status === 'Approved');
+    if (active) {
+      formEl.style.display  = 'none';
+      lockEl.style.display  = '';
+      const isPending = active.status === 'Pending';
+      document.getElementById('crlock-icon').className  = isPending ? 'fas fa-hourglass-half' : 'fas fa-check-circle';
+      document.getElementById('crlock-icon').style.color = isPending ? '#f59e0b' : '#22c55e';
+      document.getElementById('crlock-title').textContent = isPending ? 'Request Pending Review' : 'Request Approved';
+      document.getElementById('crlock-club').textContent  = active.club_name;
+      document.getElementById('crlock-msg').textContent   = isPending
+        ? 'Your proposal has been submitted and is awaiting admin review. You cannot submit another request while one is pending.'
+        : 'Your club request was approved. Your club is now active — check My Club to manage it.';
+    } else {
+      formEl.style.display  = '';
+      lockEl.style.display  = 'none';
+    }
   }
 
   function renderMyRequests(requests) {
@@ -2316,7 +2360,6 @@
           document.getElementById('req-club-adviser').value  = '';
           document.getElementById('req-club-email').value    = '';
           document.getElementById('req-club-location').value = '';
-          alert('Club proposal submitted successfully. The administrator will review it.');
           loadMyRequests();
         } else {
           alert(data.error || 'Failed to submit request.');
